@@ -1,4 +1,9 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+@using SalaryAdvanced.Application.Interfaces
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
 
 <PageTitle>SalaryAdvanced</PageTitle>
 
@@ -8,8 +13,46 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+        <div class="top-row px-4 auth">
+            <AuthorizeView>
+                <Authorized>
+                    <div class="d-flex align-items-center ms-auto">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user me-1"></i>
+                                @context.User.Identity?.Name
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <span class="dropdown-item-text">
+                                        <small class="text-muted">@GetUserRole(context)</small>
+                                    </span>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="profile">
+                                        <i class="fas fa-user-cog me-1"></i>
+                                        Hồ sơ cá nhân
+                                    </a>
+                                </li>
+                                <li>
+                                    <div class="dropdown-item p-0">
+                                        <LogoutButton CssClass="btn btn-link text-start w-100 text-decoration-none text-dark" 
+                                                    Text="Đăng xuất" 
+                                                    ConfirmBeforeLogout="true" />
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/login" class="btn btn-primary btn-sm">
+                        <i class="fas fa-sign-in-alt me-1"></i>
+                        Đăng nhập
+                    </a>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
 
         <article class="content px-4">
@@ -17,3 +60,29 @@
         </article>
     </main>
 </div>
+
+@code {
+    private async Task LogoutAsync()
+    {
+        try
+        {
+            await AuthService.SignOutAsync();
+            Navigation.NavigateTo("/logout", forceLoad: true);
+        }
+        catch
+        {
+            Navigation.NavigateTo("/logout", forceLoad: true);
+        }
+    }
+
+    private string GetUserRole(AuthenticationState context)
+    {
+        if (context.User.IsInRole("Admin"))
+            return "Quản trị viên";
+        if (context.User.IsInRole("Manager"))
+            return "Quản lý";
+        if (context.User.IsInRole("Employee"))
+            return "Nhân viên";
+        return "Người dùng";
+    }
+}
