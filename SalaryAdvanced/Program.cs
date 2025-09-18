@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using SalaryAdvanced.Data;
 using SalaryAdvanced.Infrastructure.Data;
@@ -9,6 +10,7 @@ using SalaryAdvanced.Domain.Interfaces;
 using SalaryAdvanced.Infrastructure.Repositories;
 using SalaryAdvanced.Application.Interfaces;
 using SalaryAdvanced.Application.Services;
+using SalaryAdvanced.Infrastructure.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -84,6 +86,9 @@ builder.Services.AddScoped<ISalaryAdvanceService, SalaryAdvanceService>();
 
 // Add HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
+
+// Add Authentication State Provider for Blazor Server
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
 // Legacy service for sample pages
 builder.Services.AddSingleton<WeatherForecastService>();
