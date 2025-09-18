@@ -1,6 +1,15 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using SalaryAdvanced.Application.Interfaces
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">SalaryAdvanced</a>
+        <a class="navbar-brand" href="">
+            <i class="fas fa-money-bill-wave me-2"></i>
+            Hệ thống Tạm ứng Lương
+        </a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -9,21 +18,75 @@
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-            </NavLink>
-        </div>
+        <AuthorizeView>
+            <Authorized>
+                <!-- Authenticated Menu Items -->
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                        <span class="oi oi-home" aria-hidden="true"></span> Dashboard
+                    </NavLink>
+                </div>
+                
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="salary-advance">
+                        <span class="oi oi-dollar" aria-hidden="true"></span> Yêu cầu Tạm ứng
+                    </NavLink>
+                </div>
+                
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="my-requests">
+                        <span class="oi oi-list" aria-hidden="true"></span> Lịch sử Yêu cầu
+                    </NavLink>
+                </div>
+                
+                <AuthorizeView Roles="Manager,Admin">
+                    <Authorized Context="managerUser">
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="approval">
+                                <span class="oi oi-check" aria-hidden="true"></span> Phê duyệt
+                            </NavLink>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+                
+                <AuthorizeView Roles="Admin">
+                    <Authorized Context="adminUser">
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="admin">
+                                <span class="oi oi-cog" aria-hidden="true"></span> Quản trị
+                            </NavLink>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+                
+                <!-- User Info & Logout -->
+                <div class="nav-item px-3 mt-auto">
+                    <div class="nav-link text-muted border-top pt-3">
+                        <div class="small">
+                            <i class="fas fa-user me-1"></i>
+                            @context.User.Identity?.Name
+                        </div>
+                        <div class="small">
+                            <i class="fas fa-id-badge me-1"></i>
+                            @GetUserRole(context)
+                        </div>
+                        <button class="btn btn-outline-light btn-sm mt-2" @onclick="LogoutAsync">
+                            <i class="fas fa-sign-out-alt me-1"></i>
+                            Đăng xuất
+                        </button>
+                    </div>
+                </div>
+            </Authorized>
+            
+            <NotAuthorized>
+                <!-- Anonymous Menu Items -->
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="login">
+                        <span class="oi oi-account-login" aria-hidden="true"></span> Đăng nhập
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
     </nav>
 </div>
 
@@ -35,5 +98,22 @@
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    private async Task LogoutAsync()
+    {
+        await AuthService.SignOutAsync();
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    private string GetUserRole(AuthenticationState context)
+    {
+        if (context.User.IsInRole("Admin"))
+            return "Quản trị viên";
+        if (context.User.IsInRole("Manager"))
+            return "Quản lý";
+        if (context.User.IsInRole("Employee"))
+            return "Nhân viên";
+        return "Người dùng";
     }
 }

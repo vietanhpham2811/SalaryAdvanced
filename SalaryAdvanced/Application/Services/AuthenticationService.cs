@@ -57,7 +57,6 @@ namespace SalaryAdvanced.Application.Services
             
             if (result.Succeeded)
             {
-                // Default role is Employee, can be changed later via UserManager
                 await _userManager.AddToRoleAsync(user, "Employee");
                 
                 return true;
