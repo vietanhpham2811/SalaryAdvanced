@@ -1,20 +1,21 @@
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using SalaryAdvanced.Application.Interfaces;
+using SalaryAdvanced.Application.Mappings;
+using SalaryAdvanced.Application.Services;
 using SalaryAdvanced.Data;
-using SalaryAdvanced.Infrastructure.Data;
 using SalaryAdvanced.Domain.Entities;
 using SalaryAdvanced.Domain.Interfaces;
-using SalaryAdvanced.Infrastructure.Repositories;
-using SalaryAdvanced.Application.Interfaces;
-using SalaryAdvanced.Application.Services;
 using SalaryAdvanced.Infrastructure.Auth;
+using SalaryAdvanced.Infrastructure.Data;
+using SalaryAdvanced.Infrastructure.Repositories;
+using SalaryAdvanced.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddControllers();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
@@ -72,6 +73,9 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole("Manager"));
 });
 
+// Add AutoMapper
+builder.Services.AddAutoMapper(cfg => { cfg.AddProfile<DepartmentProfile>(); });
+
 // Add Repository pattern
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
@@ -83,6 +87,7 @@ builder.Services.AddScoped<ISystemSettingRepository, SystemSettingRepository>();
 // Add Application Services
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<ISalaryAdvanceService, SalaryAdvanceService>();
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 
 // Add HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
@@ -135,6 +140,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
