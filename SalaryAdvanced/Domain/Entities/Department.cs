@@ -17,7 +17,7 @@ namespace SalaryAdvanced.Domain.Entities
         public int? ManagerId { get; set; }
 
         // Navigation properties
-        public Employee? Manager { get; set; }
-        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+        public ApplicationUser? Manager { get; set; }
+        public ICollection<ApplicationUser> Employees { get; set; } = new List<ApplicationUser>();
     }
 }

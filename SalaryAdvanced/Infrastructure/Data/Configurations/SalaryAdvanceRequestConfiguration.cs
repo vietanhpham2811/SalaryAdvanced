@@ -31,9 +31,9 @@ namespace SalaryAdvanced.Infrastructure.Data.Configurations
             builder.Property(sar => sar.RejectionReason)
                 .HasMaxLength(1000);
 
-            // Relationship with Employee (requestor)
-            builder.HasOne(sar => sar.Employee)
-                .WithMany(e => e.SalaryAdvanceRequests)
+            // Relationship with ApplicationUser (requestor) - Use Identity
+            builder.HasOne(sar => sar.ApplicationUser)
+                .WithMany(u => u.SalaryAdvanceRequests)
                 .HasForeignKey(sar => sar.EmployeeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -43,9 +43,9 @@ namespace SalaryAdvanced.Infrastructure.Data.Configurations
                 .HasForeignKey(sar => sar.StatusId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Relationship with Employee (approver)
-            builder.HasOne(sar => sar.ApprovedBy)
-                .WithMany(e => e.ApprovedRequests)
+            // Relationship with ApplicationUser (approver) - Use Identity
+            builder.HasOne(sar => sar.ApprovedByUser)
+                .WithMany(u => u.ApprovedRequests)
                 .HasForeignKey(sar => sar.ApprovedById)
                 .OnDelete(DeleteBehavior.SetNull);
 
