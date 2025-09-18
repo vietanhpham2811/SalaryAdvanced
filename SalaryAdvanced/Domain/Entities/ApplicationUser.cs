@@ -20,8 +20,6 @@ namespace SalaryAdvanced.Domain.Entities
         [Required]
         public int DepartmentId { get; set; }
 
-        // Note: Role is managed by ASP.NET Core Identity, no direct RoleId property needed
-
         [Required]
         [Column(TypeName = "decimal(15,2)")]
         public decimal BasicSalary { get; set; }
@@ -36,10 +34,6 @@ namespace SalaryAdvanced.Domain.Entities
 
         // Navigation properties
         public Department Department { get; set; } = null!;
-        
-        // Note: Role is handled by Identity framework through ApplicationRole
-
-        // Department management relationship
         public Department? ManagedDepartment { get; set; }
 
         // Salary advance requests

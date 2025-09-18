@@ -9,29 +9,30 @@ using System.Security.Claims;
 
 namespace SalaryAdvanced.Application.Services
 {
-    public class AuthenticationService : SalaryAdvanced.Application.Interfaces.IAuthenticationService
+    public class AuthenticationService : Interfaces.IAuthenticationService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly AuthenticationStateProvider _authStateProvider;
+        private readonly ILogger<AuthenticationService> _logger;
 
         public AuthenticationService(
             UserManager<ApplicationUser> userManager,
             IHttpContextAccessor httpContextAccessor,
-            AuthenticationStateProvider authStateProvider)
+            AuthenticationStateProvider authStateProvider,
+            ILogger<AuthenticationService> logger)
         {
             _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
             _authStateProvider = authStateProvider;
+            _logger = logger;
         }
 
         public async Task<bool> SignInAsync(string email, string password)
         {
             try
             {
-                var user = await _userManager.FindByEmailAsync(email) ?? 
-                          await _userManager.FindByNameAsync(email);
-
+                var user = await _userManager.FindByEmailAsync(email);
                 if (user == null || !user.IsActive)
                     return false;
                 var isValidPassword = await _userManager.CheckPasswordAsync(user, password);
@@ -39,11 +40,9 @@ namespace SalaryAdvanced.Application.Services
                     return false;
 
                 var httpContext = _httpContextAccessor.HttpContext;
-
                 if (httpContext == null)
                 {
-
-                    throw new InvalidOperationException("HttpContext is not available. This can happen in Blazor Server during SignalR calls. Try calling this method from a component that has HTTP context.");
+                    throw new InvalidOperationException("HttpContext is not available.");
                 }
 
                 var principal = await CreateClaimsPrincipalAsync(user);
@@ -55,20 +54,16 @@ namespace SalaryAdvanced.Application.Services
                         IsPersistent = true,
                         ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
                     });
-
-                // Notify Blazor authentication state changed
                 if (_authStateProvider is Infrastructure.Auth.CustomAuthenticationStateProvider customProvider)
                 {
                     customProvider.NotifyUserAuthentication(principal);
                 }
-
                 return true;
             }
             catch (Exception ex)
             {
-                // Log the actual exception for debugging
-                System.Diagnostics.Debug.WriteLine($"SignIn error: {ex.Message}");
-                return false;
+                _logger.LogError(ex, "Error when login");
+                throw new Exception(ex.Message, ex);
             }
         }
 
@@ -79,16 +74,12 @@ namespace SalaryAdvanced.Application.Services
                 if (_authStateProvider is Infrastructure.Auth.CustomAuthenticationStateProvider customProvider)
                 {
                     customProvider.NotifyUserLogout();
-                }
-                
+                }             
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"SignOut error: {ex.Message}");
-                if (_authStateProvider is Infrastructure.Auth.CustomAuthenticationStateProvider customProvider)
-                {
-                    customProvider.NotifyUserLogout();
-                }
+                _logger.LogError(ex, "Error when logout");
+                throw new Exception(ex.Message, ex);
             }
         }
 
@@ -115,15 +106,13 @@ namespace SalaryAdvanced.Application.Services
 
         public async Task<bool> RegisterAsync(ApplicationUser user, string password)
         {
-            var result = await _userManager.CreateAsync(user, password);
-            
+            var result = await _userManager.CreateAsync(user, password);        
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, "Employee");
                 
                 return true;
-            }
-            
+            }        
             return false;
         }
 
@@ -145,8 +134,6 @@ namespace SalaryAdvanced.Application.Services
                 new("FullName", user.FullName),
                 new("EmployeeCode", user.EmployeeCode)
             };
-
-            // Add role claims
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));

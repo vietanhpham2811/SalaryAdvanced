@@ -9,7 +9,7 @@ namespace SalaryAdvanced.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly SalaryAdvanced.Application.Interfaces.IAuthenticationService _authService;
+        private readonly Application.Interfaces.IAuthenticationService _authService;
         private readonly ILogger<AccountController> _logger;
 
         public AccountController(SalaryAdvanced.Application.Interfaces.IAuthenticationService authService, ILogger<AccountController> logger)
@@ -43,13 +43,6 @@ namespace SalaryAdvanced.Controllers
                 _logger.LogError(ex, "Lỗi trong quá trình đăng nhập cho user: {Email}", Email);
                 return Redirect("/login?error=" + Uri.EscapeDataString($"Có lỗi xảy ra: {ex.Message}"));
             }
-        }
-
-        [HttpPost("/logout")]
-        public async Task<IActionResult> Logout()
-        {
-            await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
-            return Redirect("/login");
         }
 
         [HttpGet("/logout")]

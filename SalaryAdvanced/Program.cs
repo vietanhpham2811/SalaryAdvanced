@@ -17,14 +17,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddControllers(); // Add this line for MVC controllers
+builder.Services.AddControllers();
 
 // Add Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-    
-    // Enable detailed errors in development
     if (builder.Environment.IsDevelopment())
     {
         options.EnableSensitiveDataLogging();
@@ -58,10 +56,11 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/login";
     options.LogoutPath = "/login";
     options.AccessDeniedPath = "/login";
-    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.ExpireTimeSpan = TimeSpan.FromHours(8); // Default for non-persistent cookies
     options.SlidingExpiration = true;
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // Allow HTTP for development
 });
 
 // Add Authorization policies
@@ -104,7 +103,6 @@ if (!app.Environment.IsDevelopment())
 }
 else
 {
-    // Auto-migrate database in development
     using (var scope = app.Services.CreateScope())
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -113,10 +111,6 @@ else
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
         try
         {
-            // Migrate database
-            dbContext.Database.Migrate();
-            
-            // Seed roles
             await SeedRolesAndUsersAsync(roleManager, userManager, dbContext);
         }
         catch (Exception ex)
@@ -131,21 +125,18 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Add Authentication & Authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers(); // Add this line to map controller endpoints
+app.MapControllers();
 app.MapRazorPages();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 app.Run();
 
-// Helper method to seed initial data
 static async Task SeedRolesAndUsersAsync(RoleManager<ApplicationRole> roleManager, UserManager<ApplicationUser> userManager, ApplicationDbContext context)
 {
-    // Create roles if they don't exist
     string[] roles = { "Manager", "Employee" };
 
     foreach (string role in roles)
@@ -156,10 +147,8 @@ static async Task SeedRolesAndUsersAsync(RoleManager<ApplicationRole> roleManage
         }
     }
 
-    // Create default admin user
     if (!await userManager.Users.AnyAsync())
     {
-        // First, ensure we have departments and roles in the database
         if (!context.Departments.Any())
         {
             context.Departments.Add(new Department
@@ -170,8 +159,6 @@ static async Task SeedRolesAndUsersAsync(RoleManager<ApplicationRole> roleManage
             });
             await context.SaveChangesAsync();
         }
-
-        // Seed ApplicationRoles - roleManager is already provided as parameter
         if (!await roleManager.RoleExistsAsync("Employee"))
         {
             await roleManager.CreateAsync(new ApplicationRole { Name = "Employee" });
@@ -216,7 +203,6 @@ static async Task SeedRolesAndUsersAsync(RoleManager<ApplicationRole> roleManage
         if (managerResult.Succeeded)
         {
             await userManager.AddToRoleAsync(managerUser, "Manager");
-            // Update department manager
             department.ManagerId = managerUser.Id;
             context.Departments.Update(department);
         }
@@ -224,8 +210,7 @@ static async Task SeedRolesAndUsersAsync(RoleManager<ApplicationRole> roleManage
         if (employeeResult.Succeeded)
         {
             await userManager.AddToRoleAsync(employeeUser, "Employee");
-        }
-        
+        }       
         await context.SaveChangesAsync();
     }
 }

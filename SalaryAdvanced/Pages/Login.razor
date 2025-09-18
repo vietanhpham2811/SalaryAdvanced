@@ -2,20 +2,21 @@
 @using SalaryAdvanced.Application.DTOs
 @using SalaryAdvanced.Application.Interfaces
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IJSRuntime JSRuntime
 
-<PageTitle>Đăng nhập - Hệ thống Tạm ứng Lương</PageTitle>
+<PageTitle>Login - Salary Advanced System</PageTitle>
 
 <div class="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
     <div class="row w-100 justify-content-center">
         <div class="col-md-6 col-lg-4">
             <div class="card shadow-lg border-0 rounded-lg">
                 <div class="card-header bg-primary text-white text-center py-4">
-                    <h3 class="fw-light mb-3">Đăng nhập</h3>
-                    <small>Hệ thống Quản lý Tạm ứng Lương</small>
+                    <h3 class="fw-light mb-3">Login</h3>
+                    <small>Salary Advanced System</small>
                 </div>
                 
                 <div class="card-body">
@@ -51,47 +52,54 @@
                             </label>
                         </div>
 
-                        <div class="form-floating mb-3">
+                        <div class="form-floating mb-3 position-relative">
                             <input name="Password" 
-                                   type="password" 
+                                   type="@(showPassword ? "text" : "password")" 
                                    value="@loginModel.Password"
                                    @oninput="@((e) => loginModel.Password = e.Value?.ToString() ?? "")"
-                                   class="form-control" 
+                                   class="form-control pe-5" 
                                    id="inputPassword" 
                                    placeholder="Password"
                                    required />
                             <label for="inputPassword">
-                                <i class="fas fa-lock me-2"></i>Mật khẩu
+                                <i class="fas fa-lock me-2"></i>Password
                             </label>
+ 
+                            <button type="button" 
+                                    class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 border-0 bg-transparent text-muted"
+                                    style="z-index: 10; width: 24px; height: 24px; margin-top: -8px;"
+                                    @onclick="TogglePasswordVisibility"
+                                    tabindex="-1">
+                                @if (showPassword)
+                                {
+                                    <i class="fas fa-eye-slash" title="Ẩn mật khẩu"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-eye" title="Hiển thị mật khẩu"></i>
+                                }
+                            </button>
                         </div>
 
                         <div class="form-check mb-3">
                             <input class="form-check-input" 
                                    type="checkbox" 
-                                   name="RememberMe"
                                    @bind="rememberMe" 
                                    id="inputRememberPassword" />
                             <label class="form-check-label" for="inputRememberPassword">
-                                Ghi nhớ đăng nhập
+                                Remember me
                             </label>
                         </div>
 
                         <input name="ReturnUrl" type="hidden" value="@ReturnUrl" />
 
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
+                            <button type="submit" class="btn btn-primary btn-lg" @onclick="SaveCredentialsBeforeSubmit">
                                 <i class="fas fa-sign-in-alt me-2"></i>
-                                <span>Đăng nhập</span>
+                                <span>Login</span>
                             </button>
                         </div>
                     </form>
-                </div>
-
-                <div class="card-footer text-center py-3">
-                    <div class="small">
-                        <i class="fas fa-info-circle me-1"></i>
-                        Tài khoản mặc định: <strong>admin</strong> / <strong>Admin123!</strong>
-                    </div>
                 </div>
             </div>
         </div>
@@ -101,7 +109,7 @@
 @code {
     private LoginDto loginModel = new();
     private bool rememberMe = false;
-    private bool isLoading = false;
+    private bool showPassword = false;
     private string? errorMessage = null;
     private string? successMessage = null;
 
@@ -113,6 +121,11 @@
     [SupplyParameterFromQuery]
     public string? Error { get; set; }
 
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -121,46 +134,62 @@
             Navigation.NavigateTo("/");
         }
 
-        // Set error message from query parameter
         if (!string.IsNullOrEmpty(Error))
         {
             errorMessage = Error;
         }
+        await LoadSavedCredentials();
     }
 
-    private async Task HandleSubmit()
+    private async Task LoadSavedCredentials()
     {
-        if (isLoading) return;
-
         try
         {
-            isLoading = true;
-            errorMessage = null;
-            successMessage = null;
+            var savedEmail = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "rememberedEmail");
+            var savedPassword = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "rememberedPassword");
+            var wasRemembered = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "rememberMe");
 
-            var result = await AuthService.SignInAsync(loginModel.Email, loginModel.Password);
-
-            if (result)
+            if (!string.IsNullOrEmpty(wasRemembered) && wasRemembered.ToLower() == "true")
             {
-                successMessage = "Đăng nhập thành công! Đang chuyển hướng...";
-                await InvokeAsync(() => AuthStateProvider.GetAuthenticationStateAsync());
-                await Task.Delay(1000);
-                var returnUrl = ReturnUrl ?? "/";
-                Navigation.NavigateTo(returnUrl, forceLoad: true);
-            }
-            else
-            {
-                errorMessage = "Email hoặc mật khẩu không đúng. Vui lòng thử lại.";
+                rememberMe = true;
+                if (!string.IsNullOrEmpty(savedEmail))
+                    loginModel.Email = savedEmail;
+                if (!string.IsNullOrEmpty(savedPassword))
+                    loginModel.Password = savedPassword;
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Có lỗi xảy ra trong quá trình đăng nhập: {ex.Message}";
+            
         }
-        finally
+    }
+
+    private async Task SaveCredentials()
+    {
+        try
         {
-            isLoading = false;
+            if (rememberMe)
+            {
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "rememberedEmail", loginModel.Email);
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "rememberedPassword", loginModel.Password);
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "rememberMe", "true");
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "rememberedEmail");
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "rememberedPassword");
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "rememberMe");
+            }
         }
+        catch (Exception ex)
+        {
+            
+        }
+    }
+
+    private async Task SaveCredentialsBeforeSubmit()
+    {
+        await SaveCredentials();
     }
 
     private bool IsFieldInvalid(string fieldName)

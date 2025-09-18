@@ -6,11 +6,11 @@
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
 
-<div class="top-row ps-3 navbar navbar-dark">
+<div class="top-row ps-1 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">
             <i class="fas fa-money-bill-wave me-2"></i>
-            Hệ thống Tạm ứng Lương
+            Salary Advanced System
         </a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
@@ -22,7 +22,6 @@
     <nav class="flex-column">
         <AuthorizeView>
             <Authorized>
-                <!-- Authenticated Menu Items -->
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                         <span class="oi oi-home" aria-hidden="true"></span> Dashboard
@@ -72,23 +71,11 @@
                             <i class="fas fa-id-badge me-1"></i>
                             @GetUserRole(context)
                         </div>
-                        <!-- Also keep the LogoutButton for comparison -->
-                        <div class="mt-1">
-                            <LogoutButton CssClass="btn btn-outline-warning btn-sm w-100" 
-                                        Text="Logout Component" 
-                                        ConfirmBeforeLogout="false" />
-                        </div>
                     </div>
                 </div>
             </Authorized>
             
             <NotAuthorized>
-                <!-- Anonymous Menu Items -->
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="login">
-                        <span class="oi oi-account-login" aria-hidden="true"></span> Đăng nhập
-                    </NavLink>
-                </div>
             </NotAuthorized>
         </AuthorizeView>
     </nav>
@@ -109,31 +96,25 @@
         try
         {
             Console.WriteLine("NavMenu LogoutAsync called");
-            
-            // First, clear the Blazor authentication state
             await AuthService.SignOutAsync();
             Console.WriteLine("AuthService.SignOutAsync completed");
-            
-            // Then redirect to logout endpoint to clear cookies
+
             Navigation.NavigateTo("/logout", forceLoad: true);
             Console.WriteLine("Navigation to logout endpoint completed");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"NavMenu Logout error: {ex.Message}");
-            // Even if there's an error, try to redirect to logout endpoint
             Navigation.NavigateTo("/logout", forceLoad: true);
         }
     }
 
     private string GetUserRole(AuthenticationState context)
     {
-        if (context.User.IsInRole("Admin"))
-            return "Quản trị viên";
         if (context.User.IsInRole("Manager"))
-            return "Quản lý";
+            return "Manager";
         if (context.User.IsInRole("Employee"))
-            return "Nhân viên";
-        return "Người dùng";
+            return "Employee";
+        return "User";
     }
 }
