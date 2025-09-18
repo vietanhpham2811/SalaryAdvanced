@@ -37,56 +37,54 @@
                         </div>
                     }
 
-                    <EditForm Model="loginModel" OnValidSubmit="HandleSubmit">
-                        <DataAnnotationsValidator />
-                        
+                    <form method="post" action="/login">
                         <div class="form-floating mb-3">
-                            <InputText @bind-Value="loginModel.Email" 
-                                      class="@($"form-control {(IsFieldInvalid("Email") ? "is-invalid" : "")}")" 
-                                      id="inputEmail" 
-                                      placeholder="name@example.com" 
-                                      disabled="@isLoading" />
+                            <input name="Email" 
+                                   value="@loginModel.Email" 
+                                   @oninput="@((e) => loginModel.Email = e.Value?.ToString() ?? "")"
+                                   class="form-control" 
+                                   id="inputEmail" 
+                                   placeholder="name@example.com" 
+                                   required />
                             <label for="inputEmail">
                                 <i class="fas fa-envelope me-2"></i>Email
                             </label>
-                            <ValidationMessage For="@(() => loginModel.Email)" class="invalid-feedback" />
                         </div>
 
                         <div class="form-floating mb-3">
-                            <InputText @bind-Value="loginModel.Password" 
-                                      type="password" 
-                                      class="@($"form-control {(IsFieldInvalid("Password") ? "is-invalid" : "")}")" 
-                                      id="inputPassword" 
-                                      placeholder="Password" 
-                                      disabled="@isLoading" />
+                            <input name="Password" 
+                                   type="password" 
+                                   value="@loginModel.Password"
+                                   @oninput="@((e) => loginModel.Password = e.Value?.ToString() ?? "")"
+                                   class="form-control" 
+                                   id="inputPassword" 
+                                   placeholder="Password"
+                                   required />
                             <label for="inputPassword">
                                 <i class="fas fa-lock me-2"></i>Mật khẩu
                             </label>
-                            <ValidationMessage For="@(() => loginModel.Password)" class="invalid-feedback" />
                         </div>
 
                         <div class="form-check mb-3">
-                            <InputCheckbox @bind-Value="rememberMe" class="form-check-input" id="inputRememberPassword" disabled="@isLoading" />
-                            <label class="form-check-label" for="inputRememberPassword">Ghi nhớ đăng nhập</label>
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   name="RememberMe"
+                                   @bind="rememberMe" 
+                                   id="inputRememberPassword" />
+                            <label class="form-check-label" for="inputRememberPassword">
+                                Ghi nhớ đăng nhập
+                            </label>
                         </div>
 
+                        <input name="ReturnUrl" type="hidden" value="@ReturnUrl" />
+
                         <div class="d-grid">
-                            <button class="btn btn-primary btn-lg" type="submit" disabled="@isLoading">
-                                @if (isLoading)
-                                {
-                                    <div class="spinner-border spinner-border-sm me-2" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
-                                    <span>Đang đăng nhập...</span>
-                                }
-                                else
-                                {
-                                    <i class="fas fa-sign-in-alt me-2"></i>
-                                    <span>Đăng nhập</span>
-                                }
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                <span>Đăng nhập</span>
                             </button>
                         </div>
-                    </EditForm>
+                    </form>
                 </div>
 
                 <div class="card-footer text-center py-3">
@@ -111,12 +109,22 @@
     [SupplyParameterFromQuery]
     public string? ReturnUrl { get; set; }
 
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Error { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         if (authState.User.Identity?.IsAuthenticated == true)
         {
             Navigation.NavigateTo("/");
+        }
+
+        // Set error message from query parameter
+        if (!string.IsNullOrEmpty(Error))
+        {
+            errorMessage = Error;
         }
     }
 
@@ -135,14 +143,8 @@
             if (result)
             {
                 successMessage = "Đăng nhập thành công! Đang chuyển hướng...";
-                
-                // Notify auth state changed
                 await InvokeAsync(() => AuthStateProvider.GetAuthenticationStateAsync());
-                
-                // Small delay to show success message
                 await Task.Delay(1000);
-                
-                // Redirect
                 var returnUrl = ReturnUrl ?? "/";
                 Navigation.NavigateTo(returnUrl, forceLoad: true);
             }
@@ -163,8 +165,7 @@
 
     private bool IsFieldInvalid(string fieldName)
     {
-        // Helper method to check if a field has validation errors
-        return false; // Simplified for now
+        return false;
     }
 
     private void ClearError()

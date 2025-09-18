@@ -3,6 +3,8 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -70,10 +72,12 @@
                             <i class="fas fa-id-badge me-1"></i>
                             @GetUserRole(context)
                         </div>
-                        <button class="btn btn-outline-light btn-sm mt-2" @onclick="LogoutAsync">
-                            <i class="fas fa-sign-out-alt me-1"></i>
-                            Đăng xuất
-                        </button>
+                        <!-- Also keep the LogoutButton for comparison -->
+                        <div class="mt-1">
+                            <LogoutButton CssClass="btn btn-outline-warning btn-sm w-100" 
+                                        Text="Logout Component" 
+                                        ConfirmBeforeLogout="false" />
+                        </div>
                     </div>
                 </div>
             </Authorized>
@@ -102,8 +106,24 @@
 
     private async Task LogoutAsync()
     {
-        await AuthService.SignOutAsync();
-        Navigation.NavigateTo("/login", forceLoad: true);
+        try
+        {
+            Console.WriteLine("NavMenu LogoutAsync called");
+            
+            // First, clear the Blazor authentication state
+            await AuthService.SignOutAsync();
+            Console.WriteLine("AuthService.SignOutAsync completed");
+            
+            // Then redirect to logout endpoint to clear cookies
+            Navigation.NavigateTo("/logout", forceLoad: true);
+            Console.WriteLine("Navigation to logout endpoint completed");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"NavMenu Logout error: {ex.Message}");
+            // Even if there's an error, try to redirect to logout endpoint
+            Navigation.NavigateTo("/logout", forceLoad: true);
+        }
     }
 
     private string GetUserRole(AuthenticationState context)
