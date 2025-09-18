@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
-using SalaryAdvanced.Data;
 using SalaryAdvanced.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,7 +23,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 
 // Legacy service for sample pages
-builder.Services.AddSingleton<WeatherForecastService>();
 
 var app = builder.Build();
 
