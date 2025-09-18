@@ -1,33 +1,43 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SalaryAdvanced.Domain.Entities;
 using SalaryAdvanced.Infrastructure.Data.Configurations;
 
 namespace SalaryAdvanced.Infrastructure.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, int>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
 
         public DbSet<Department> Departments { get; set; } = null!;
-        public DbSet<Employee> Employees { get; set; } = null!;
-        public DbSet<Role> Roles { get; set; } = null!;
         public DbSet<RequestStatus> RequestStatuses { get; set; } = null!;
         public DbSet<SalaryAdvanceRequest> SalaryAdvanceRequests { get; set; } = null!;
         public DbSet<SystemSetting> SystemSettings { get; set; } = null!;
+
+        // Identity tables will be created automatically
+        // ApplicationUser and ApplicationRole are handled by IdentityDbContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             // Apply all configurations
+            modelBuilder.ApplyConfiguration(new ApplicationUserConfiguration());
             modelBuilder.ApplyConfiguration(new DepartmentConfiguration());
-            modelBuilder.ApplyConfiguration(new EmployeeConfiguration());
-            modelBuilder.ApplyConfiguration(new RoleConfiguration());
             modelBuilder.ApplyConfiguration(new RequestStatusConfiguration());
             modelBuilder.ApplyConfiguration(new SalaryAdvanceRequestConfiguration());
             modelBuilder.ApplyConfiguration(new SystemSettingConfiguration());
+
+            // Configure Identity table names
+            modelBuilder.Entity<ApplicationUser>().ToTable("application_users");
+            modelBuilder.Entity<ApplicationRole>().ToTable("application_roles");
+            modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityUserRole<int>>().ToTable("application_user_roles");
+            modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityUserClaim<int>>().ToTable("application_user_claims");
+            modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityUserLogin<int>>().ToTable("application_user_logins");
+            modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>>().ToTable("application_role_claims");
+            modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityUserToken<int>>().ToTable("application_user_tokens");
 
             // Set PostgreSQL naming convention to snake_case
             foreach (var entity in modelBuilder.Model.GetEntityTypes())

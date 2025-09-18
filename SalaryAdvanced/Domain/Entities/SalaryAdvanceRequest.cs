@@ -31,8 +31,8 @@ namespace SalaryAdvanced.Domain.Entities
         public string? RejectionReason { get; set; }
 
         // Navigation properties
-        public Employee Employee { get; set; } = null!;
+        public ApplicationUser ApplicationUser { get; set; } = null!;
         public RequestStatus Status { get; set; } = null!;
-        public Employee? ApprovedBy { get; set; }
+        public ApplicationUser? ApprovedByUser { get; set; }
     }
 }
