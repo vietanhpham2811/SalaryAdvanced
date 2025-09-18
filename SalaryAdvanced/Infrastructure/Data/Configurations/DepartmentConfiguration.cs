@@ -24,16 +24,16 @@ namespace SalaryAdvanced.Infrastructure.Data.Configurations
             builder.Property(e => e.Description)
                 .HasMaxLength(1000);
 
-            // Self-reference relationship for Manager
+            // Self-reference relationship for Manager (ApplicationUser)
             builder.HasOne(d => d.Manager)
-                .WithOne(e => e.ManagedDepartment)
+                .WithOne(u => u.ManagedDepartment)
                 .HasForeignKey<Department>(d => d.ManagerId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // One-to-many relationship with Employees
+            // One-to-many relationship with ApplicationUsers
             builder.HasMany(d => d.Employees)
-                .WithOne(e => e.Department)
-                .HasForeignKey(e => e.DepartmentId)
+                .WithOne(u => u.Department)
+                .HasForeignKey(u => u.DepartmentId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

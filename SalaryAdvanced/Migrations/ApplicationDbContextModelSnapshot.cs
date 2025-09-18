@@ -22,6 +22,311 @@ namespace SalaryAdvanced.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("text")
+                        .HasColumnName("claim_type");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("text")
+                        .HasColumnName("claim_value");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("role_id");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_application_role_claims");
+
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("i_x_application_role_claims_role_id");
+
+                    b.ToTable("application_role_claims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("text")
+                        .HasColumnName("claim_type");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("text")
+                        .HasColumnName("claim_value");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_application_user_claims");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("i_x_application_user_claims_user_id");
+
+                    b.ToTable("application_user_claims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text")
+                        .HasColumnName("login_provider");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("text")
+                        .HasColumnName("provider_key");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("text")
+                        .HasColumnName("provider_display_name");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("LoginProvider", "ProviderKey")
+                        .HasName("p_k_application_user_logins");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("i_x_application_user_logins_user_id");
+
+                    b.ToTable("application_user_logins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("role_id");
+
+                    b.HasKey("UserId", "RoleId")
+                        .HasName("p_k_application_user_roles");
+
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("i_x_application_user_roles_role_id");
+
+                    b.ToTable("application_user_roles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text")
+                        .HasColumnName("login_provider");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("text")
+                        .HasColumnName("value");
+
+                    b.HasKey("UserId", "LoginProvider", "Name")
+                        .HasName("p_k_application_user_tokens");
+
+                    b.ToTable("application_user_tokens", (string)null);
+                });
+
+            modelBuilder.Entity("SalaryAdvanced.Domain.Entities.ApplicationRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text")
+                        .HasColumnName("concurrency_stamp");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("normalized_name");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_application_roles");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("role_name_index");
+
+                    b.ToTable("application_roles", (string)null);
+                });
+
+            modelBuilder.Entity("SalaryAdvanced.Domain.Entities.ApplicationUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("access_failed_count");
+
+                    b.Property<decimal>("BasicSalary")
+                        .HasColumnType("decimal(15,2)")
+                        .HasColumnName("basic_salary");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text")
+                        .HasColumnName("concurrency_stamp");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("integer")
+                        .HasColumnName("department_id");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("email");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("email_confirmed");
+
+                    b.Property<string>("EmployeeCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("employee_code");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("full_name");
+
+                    b.Property<DateTime>("HireDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("hire_date");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("lockout_enabled");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lockout_end");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("normalized_email");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("normalized_user_name");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("text")
+                        .HasColumnName("password_hash");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("phone");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("phone_number");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("phone_number_confirmed");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("text")
+                        .HasColumnName("security_stamp");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("two_factor_enabled");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("user_name");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_application_users");
+
+                    b.HasIndex("DepartmentId")
+                        .HasDatabaseName("i_x_application_users_department_id");
+
+                    b.HasIndex("EmployeeCode")
+                        .IsUnique()
+                        .HasDatabaseName("i_x_application_users_employee_code");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("email_index");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("user_name_index");
+
+                    b.ToTable("application_users", (string)null);
+                });
+
             modelBuilder.Entity("SalaryAdvanced.Domain.Entities.Department", b =>
                 {
                     b.Property<int>("Id")
@@ -74,94 +379,6 @@ namespace SalaryAdvanced.Migrations
                     b.ToTable("departments");
                 });
 
-            modelBuilder.Entity("SalaryAdvanced.Domain.Entities.Employee", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("BasicSalary")
-                        .HasColumnType("decimal(15,2)")
-                        .HasColumnName("basic_salary");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<int>("DepartmentId")
-                        .HasColumnType("integer")
-                        .HasColumnName("department_id");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("email");
-
-                    b.Property<string>("EmployeeCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("employee_code");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("full_name");
-
-                    b.Property<DateTime>("HireDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("hire_date");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("password_hash");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("phone");
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("integer")
-                        .HasColumnName("role_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("p_k_employees");
-
-                    b.HasIndex("DepartmentId")
-                        .HasDatabaseName("i_x_employees_department_id");
-
-                    b.HasIndex("Email")
-                        .IsUnique()
-                        .HasDatabaseName("i_x_employees_email");
-
-                    b.HasIndex("EmployeeCode")
-                        .IsUnique()
-                        .HasDatabaseName("i_x_employees_employee_code");
-
-                    b.HasIndex("RoleId")
-                        .HasDatabaseName("i_x_employees_role_id");
-
-                    b.ToTable("employees");
-                });
-
             modelBuilder.Entity("SalaryAdvanced.Domain.Entities.RequestStatus", b =>
                 {
                     b.Property<int>("Id")
@@ -203,82 +420,26 @@ namespace SalaryAdvanced.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 264, DateTimeKind.Utc).AddTicks(7601),
+                            CreatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(441),
                             Description = "Chờ phê duyệt",
                             Name = "Pending",
-                            UpdatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 264, DateTimeKind.Utc).AddTicks(7602)
+                            UpdatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(442)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 264, DateTimeKind.Utc).AddTicks(7603),
+                            CreatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(443),
                             Description = "Đã phê duyệt",
                             Name = "Approved",
-                            UpdatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 264, DateTimeKind.Utc).AddTicks(7604)
+                            UpdatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(444)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 264, DateTimeKind.Utc).AddTicks(7605),
+                            CreatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(445),
                             Description = "Đã từ chối",
                             Name = "Rejected",
-                            UpdatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 264, DateTimeKind.Utc).AddTicks(7606)
-                        });
-                });
-
-            modelBuilder.Entity("SalaryAdvanced.Domain.Entities.Role", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("description");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("name");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("p_k_roles");
-
-                    b.HasIndex("Name")
-                        .IsUnique()
-                        .HasDatabaseName("i_x_roles_name");
-
-                    b.ToTable("roles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 264, DateTimeKind.Utc).AddTicks(6911),
-                            Description = "Nhân viên",
-                            Name = "Employee",
-                            UpdatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 264, DateTimeKind.Utc).AddTicks(6911)
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 264, DateTimeKind.Utc).AddTicks(6913),
-                            Description = "Quản lý",
-                            Name = "Manager",
-                            UpdatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 264, DateTimeKind.Utc).AddTicks(6914)
+                            UpdatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(446)
                         });
                 });
 
@@ -413,96 +574,144 @@ namespace SalaryAdvanced.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 265, DateTimeKind.Utc).AddTicks(1009),
+                            CreatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(4051),
                             Description = "Tỷ lệ % tối đa mỗi lần ứng lương",
                             SettingKey = "MAX_ADVANCE_PERCENTAGE",
                             SettingValue = "50",
-                            UpdatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 265, DateTimeKind.Utc).AddTicks(1010)
+                            UpdatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(4051)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 265, DateTimeKind.Utc).AddTicks(1011),
+                            CreatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(4053),
                             Description = "Tỷ lệ % tối đa hàng tháng",
                             SettingKey = "MAX_MONTHLY_PERCENTAGE",
                             SettingValue = "70",
-                            UpdatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 265, DateTimeKind.Utc).AddTicks(1012)
+                            UpdatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(4053)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 265, DateTimeKind.Utc).AddTicks(1014),
+                            CreatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(4055),
                             Description = "Số lần ứng tối đa mỗi tháng",
                             SettingKey = "MAX_REQUESTS_PER_MONTH",
                             SettingValue = "2",
-                            UpdatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 265, DateTimeKind.Utc).AddTicks(1015)
+                            UpdatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(4056)
                         },
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 265, DateTimeKind.Utc).AddTicks(1016),
+                            CreatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(4058),
                             Description = "Ngày bắt đầu có thể gửi yêu cầu",
                             SettingKey = "REQUEST_START_DAY",
                             SettingValue = "1",
-                            UpdatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 265, DateTimeKind.Utc).AddTicks(1016)
+                            UpdatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(4059)
                         },
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 265, DateTimeKind.Utc).AddTicks(1059),
+                            CreatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(4060),
                             Description = "Ngày kết thúc có thể gửi yêu cầu",
                             SettingKey = "REQUEST_END_DAY",
                             SettingValue = "25",
-                            UpdatedAt = new DateTime(2025, 9, 18, 3, 8, 13, 265, DateTimeKind.Utc).AddTicks(1059)
+                            UpdatedAt = new DateTime(2025, 9, 18, 4, 21, 30, 805, DateTimeKind.Utc).AddTicks(4060)
                         });
                 });
 
-            modelBuilder.Entity("SalaryAdvanced.Domain.Entities.Department", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
-                    b.HasOne("SalaryAdvanced.Domain.Entities.Employee", "Manager")
-                        .WithOne("ManagedDepartment")
-                        .HasForeignKey("SalaryAdvanced.Domain.Entities.Department", "ManagerId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("f_k_departments__employees_manager_id");
-
-                    b.Navigation("Manager");
+                    b.HasOne("SalaryAdvanced.Domain.Entities.ApplicationRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_application_role_claims_application_roles_role_id");
                 });
 
-            modelBuilder.Entity("SalaryAdvanced.Domain.Entities.Employee", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
+                {
+                    b.HasOne("SalaryAdvanced.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_application_user_claims_application_users_user_id");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
+                {
+                    b.HasOne("SalaryAdvanced.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_application_user_logins_application_users_user_id");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
+                {
+                    b.HasOne("SalaryAdvanced.Domain.Entities.ApplicationRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_application_user_roles_application_roles_role_id");
+
+                    b.HasOne("SalaryAdvanced.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_application_user_roles_application_users_user_id");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
+                {
+                    b.HasOne("SalaryAdvanced.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_application_user_tokens_application_users_user_id");
+                });
+
+            modelBuilder.Entity("SalaryAdvanced.Domain.Entities.ApplicationUser", b =>
                 {
                     b.HasOne("SalaryAdvanced.Domain.Entities.Department", "Department")
                         .WithMany("Employees")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("f_k_employees_departments_department_id");
-
-                    b.HasOne("SalaryAdvanced.Domain.Entities.Role", "Role")
-                        .WithMany("Employees")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("f_k_employees__roles_role_id");
+                        .HasConstraintName("f_k_application_users__departments_department_id");
 
                     b.Navigation("Department");
+                });
 
-                    b.Navigation("Role");
+            modelBuilder.Entity("SalaryAdvanced.Domain.Entities.Department", b =>
+                {
+                    b.HasOne("SalaryAdvanced.Domain.Entities.ApplicationUser", "Manager")
+                        .WithOne("ManagedDepartment")
+                        .HasForeignKey("SalaryAdvanced.Domain.Entities.Department", "ManagerId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("f_k_departments_application_users_manager_id");
+
+                    b.Navigation("Manager");
                 });
 
             modelBuilder.Entity("SalaryAdvanced.Domain.Entities.SalaryAdvanceRequest", b =>
                 {
-                    b.HasOne("SalaryAdvanced.Domain.Entities.Employee", "ApprovedBy")
+                    b.HasOne("SalaryAdvanced.Domain.Entities.ApplicationUser", "ApprovedByUser")
                         .WithMany("ApprovedRequests")
                         .HasForeignKey("ApprovedById")
                         .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("f_k_salary_advance_requests_employees_approved_by_id");
+                        .HasConstraintName("f_k_salary_advance_requests_application_users_approved_by_id");
 
-                    b.HasOne("SalaryAdvanced.Domain.Entities.Employee", "Employee")
+                    b.HasOne("SalaryAdvanced.Domain.Entities.ApplicationUser", "ApplicationUser")
                         .WithMany("SalaryAdvanceRequests")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("f_k_salary_advance_requests_employees_employee_id");
+                        .HasConstraintName("f_k_salary_advance_requests_application_users_employee_id");
 
                     b.HasOne("SalaryAdvanced.Domain.Entities.RequestStatus", "Status")
                         .WithMany("SalaryAdvanceRequests")
@@ -511,19 +720,14 @@ namespace SalaryAdvanced.Migrations
                         .IsRequired()
                         .HasConstraintName("f_k_salary_advance_requests_request_statuses_status_id");
 
-                    b.Navigation("ApprovedBy");
+                    b.Navigation("ApplicationUser");
 
-                    b.Navigation("Employee");
+                    b.Navigation("ApprovedByUser");
 
                     b.Navigation("Status");
                 });
 
-            modelBuilder.Entity("SalaryAdvanced.Domain.Entities.Department", b =>
-                {
-                    b.Navigation("Employees");
-                });
-
-            modelBuilder.Entity("SalaryAdvanced.Domain.Entities.Employee", b =>
+            modelBuilder.Entity("SalaryAdvanced.Domain.Entities.ApplicationUser", b =>
                 {
                     b.Navigation("ApprovedRequests");
 
@@ -532,14 +736,14 @@ namespace SalaryAdvanced.Migrations
                     b.Navigation("SalaryAdvanceRequests");
                 });
 
+            modelBuilder.Entity("SalaryAdvanced.Domain.Entities.Department", b =>
+                {
+                    b.Navigation("Employees");
+                });
+
             modelBuilder.Entity("SalaryAdvanced.Domain.Entities.RequestStatus", b =>
                 {
                     b.Navigation("SalaryAdvanceRequests");
-                });
-
-            modelBuilder.Entity("SalaryAdvanced.Domain.Entities.Role", b =>
-                {
-                    b.Navigation("Employees");
                 });
 #pragma warning restore 612, 618
         }

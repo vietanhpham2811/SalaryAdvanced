@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SalaryAdvanced.Domain.Entities
 {
-    public class Employee : BaseEntity
+    public class ApplicationUser : IdentityUser<int>
     {
         [Required]
         [MaxLength(50)]
@@ -13,22 +14,13 @@ namespace SalaryAdvanced.Domain.Entities
         [MaxLength(255)]
         public string FullName { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(255)]
-        public string Email { get; set; } = string.Empty;
-
         [MaxLength(20)]
         public string? Phone { get; set; }
 
         [Required]
-        [MaxLength(255)]
-        public string PasswordHash { get; set; } = string.Empty;
-
-        [Required]
         public int DepartmentId { get; set; }
 
-        [Required]
-        public int RoleId { get; set; }
+        // Note: Role is managed by ASP.NET Core Identity, no direct RoleId property needed
 
         [Required]
         [Column(TypeName = "decimal(15,2)")]
@@ -39,9 +31,13 @@ namespace SalaryAdvanced.Domain.Entities
 
         public bool IsActive { get; set; } = true;
 
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
         // Navigation properties
         public Department Department { get; set; } = null!;
-        public Role Role { get; set; } = null!;
+        
+        // Note: Role is handled by Identity framework through ApplicationRole
 
         // Department management relationship
         public Department? ManagedDepartment { get; set; }
