@@ -33,7 +33,6 @@
         {
             Console.WriteLine("Logout button clicked");
             
-            // Confirm before logout if enabled
             if (ConfirmBeforeLogout)
             {
                 bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Bạn có chắc chắn muốn đăng xuất?");
@@ -47,26 +46,20 @@
             isLoading = true;
             Console.WriteLine("Starting logout process");
 
-            // Call the logout method to clear Blazor state
             await AuthService.SignOutAsync();
             Console.WriteLine("Logout service called successfully");
 
-            // Fire the callback event if provided
             if (OnLogout.HasDelegate)
             {
                 await OnLogout.InvokeAsync();
             }
-
-            // Redirect to logout endpoint to clear cookies
             Navigation.NavigateTo("/logout", forceLoad: true);
             Console.WriteLine("Redirecting to logout endpoint");
         }
         catch (Exception ex)
         {
-            // Handle error (could show toast notification)
             Console.WriteLine($"Logout error: {ex.Message}");
             Console.WriteLine($"Stack trace: {ex.StackTrace}");
-            // Even if there's an error, try to redirect to logout endpoint
             Navigation.NavigateTo("/logout", forceLoad: true);
         }
         finally

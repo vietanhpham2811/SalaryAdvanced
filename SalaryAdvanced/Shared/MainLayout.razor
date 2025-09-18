@@ -18,11 +18,15 @@
                 <Authorized>
                     <div class="d-flex align-items-center ms-auto">
                         <div class="dropdown">
-                            <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="btn btn-outline-primary btn-sm dropdown-toggle" 
+                                    type="button" 
+                                    id="userDropdown" 
+                                    data-bs-toggle="dropdown" 
+                                    aria-expanded="false">
                                 <i class="fas fa-user me-1"></i>
                                 @context.User.Identity?.Name
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
                                 <li>
                                     <span class="dropdown-item-text">
                                         <small class="text-muted">@GetUserRole(context)</small>
@@ -32,7 +36,7 @@
                                 <li>
                                     <a class="dropdown-item" href="profile">
                                         <i class="fas fa-user-cog me-1"></i>
-                                        Hồ sơ cá nhân
+                                        User Profile
                                     </a>
                                 </li>
                                 <li>
@@ -49,7 +53,7 @@
                 <NotAuthorized>
                     <a href="/login" class="btn btn-primary btn-sm">
                         <i class="fas fa-sign-in-alt me-1"></i>
-                        Đăng nhập
+                        Login
                     </a>
                 </NotAuthorized>
             </AuthorizeView>
@@ -77,12 +81,10 @@
 
     private string GetUserRole(AuthenticationState context)
     {
-        if (context.User.IsInRole("Admin"))
-            return "Quản trị viên";
         if (context.User.IsInRole("Manager"))
-            return "Quản lý";
+            return "Manager";
         if (context.User.IsInRole("Employee"))
-            return "Nhân viên";
-        return "Người dùng";
+            return "Employee";
+        return "User";
     }
 }

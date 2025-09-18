@@ -15,8 +15,7 @@ namespace SalaryAdvanced.Infrastructure.Auth
 
         public override Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var httpContext = _httpContextAccessor.HttpContext;
-            
+            var httpContext = _httpContextAccessor.HttpContext;        
             if (httpContext?.User?.Identity?.IsAuthenticated == true)
             {
                 _currentUser = httpContext.User;
@@ -25,7 +24,6 @@ namespace SalaryAdvanced.Infrastructure.Auth
             {
                 _currentUser = new ClaimsPrincipal(new ClaimsIdentity());
             }
-
             return Task.FromResult(new AuthenticationState(_currentUser));
         }
 
