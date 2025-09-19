@@ -41,10 +41,10 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
     options.Password.RequiredLength = 6;
-    
+
     // User settings
     options.User.RequireUniqueEmail = true;
-    
+
     // Sign in settings
     options.SignIn.RequireConfirmedEmail = false;
     options.SignIn.RequireConfirmedPhoneNumber = false;
@@ -68,9 +68,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 // Add Authorization policies
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("Employee", policy => 
+    options.AddPolicy("Employee", policy =>
         policy.RequireRole("Employee", "Manager"));
-    options.AddPolicy("Manager", policy => 
+    options.AddPolicy("Manager", policy =>
         policy.RequireRole("Manager"));
 });
 
@@ -156,7 +156,7 @@ static async Task SeedRolesAndUsersAsync(RoleManager<ApplicationRole> roleManage
         {
             context.Departments.Add(new Department
             {
-                Name = "Công nghệ thông tin",
+                Name = "Information Technology",
                 Code = "IT",
                 Description = "Phòng CNTT"
             });
@@ -201,19 +201,19 @@ static async Task SeedRolesAndUsersAsync(RoleManager<ApplicationRole> roleManage
 
         var managerResult = await userManager.CreateAsync(managerUser, "Manager123!");
         var employeeResult = await userManager.CreateAsync(employeeUser, "Employee123!");
-        
-        
+
+
         if (managerResult.Succeeded)
         {
             await userManager.AddToRoleAsync(managerUser, "Manager");
             department.ManagerId = managerUser.Id;
             context.Departments.Update(department);
         }
-        
+
         if (employeeResult.Succeeded)
         {
             await userManager.AddToRoleAsync(employeeUser, "Employee");
-        }       
+        }
         await context.SaveChangesAsync();
     }
 }

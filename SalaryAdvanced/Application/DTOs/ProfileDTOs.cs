@@ -20,25 +20,25 @@ namespace SalaryAdvanced.Application.DTOs
 
     public class UpdateUserProfileDto
     {
-        [Required(ErrorMessage = "Họ và tên là bắt buộc")]
-        [StringLength(255, ErrorMessage = "Họ và tên không được vượt quá 255 ký tự")]
+        [Required(ErrorMessage = "Full name is required")]
+        [StringLength(255, ErrorMessage = "Full name cannot exceed 255 characters")]
         public string FullName { get; set; } = string.Empty;
 
-        [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
+        [Phone(ErrorMessage = "Invalid phone number")]
         public string? Phone { get; set; }
     }
 
     public class ChangePasswordDto
     {
-        [Required(ErrorMessage = "Mật khẩu hiện tại là bắt buộc")]
+        [Required(ErrorMessage = "Current password is required")]
         public string CurrentPassword { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Mật khẩu mới là bắt buộc")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "Mật khẩu phải có ít nhất 6 ký tự")]
+        [Required(ErrorMessage = "New password is required")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters")]
         public string NewPassword { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Xác nhận mật khẩu là bắt buộc")]
-        [Compare("NewPassword", ErrorMessage = "Mật khẩu xác nhận không khớp")]
+        [Required(ErrorMessage = "Confirm password is required")]
+        [Compare("NewPassword", ErrorMessage = "Confirm password does not match")]
         public string ConfirmPassword { get; set; } = string.Empty;
     }
 }

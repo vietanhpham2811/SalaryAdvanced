@@ -20,14 +20,11 @@ namespace SalaryAdvanced.Domain.Entities
 
         [Required]
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
-
         public DateTime? ProcessedAt { get; set; }
 
         [Required]
         public int StatusId { get; set; }
-
         public int? ApprovedById { get; set; }
-
         public string? RejectionReason { get; set; }
 
         // Navigation properties

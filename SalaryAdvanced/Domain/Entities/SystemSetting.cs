@@ -11,7 +11,6 @@ namespace SalaryAdvanced.Domain.Entities
         [Required]
         [MaxLength(500)]
         public string SettingValue { get; set; } = string.Empty;
-
         public string? Description { get; set; }
     }
 }
