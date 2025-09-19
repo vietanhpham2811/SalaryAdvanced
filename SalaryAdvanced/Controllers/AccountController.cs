@@ -25,7 +25,7 @@ namespace SalaryAdvanced.Controllers
             {
                 if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password))
                 {
-                    return Redirect("/login?error=" + Uri.EscapeDataString("Email và mật khẩu không được để trống"));
+                    return Redirect("/login?error=" + Uri.EscapeDataString("Email and password are required"));
                 }
                 var result = await _authService.SignInAsync(Email, Password);
                 if (result)
@@ -33,12 +33,12 @@ namespace SalaryAdvanced.Controllers
                     var returnUrl = ReturnUrl ?? "/";
                     return Redirect(returnUrl);
                 }
-                return Redirect("/login?error=" + Uri.EscapeDataString("Email hoặc mật khẩu không đúng"));
+                return Redirect("/login?error=" + Uri.EscapeDataString("Invalid email or password"));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi trong quá trình đăng nhập cho user: {Email}", Email);
-                return Redirect("/login?error=" + Uri.EscapeDataString($"Có lỗi xảy ra: {ex.Message}"));
+                _logger.LogError(ex, "Error during login for user: {Email}", Email);
+                return Redirect("/login?error=" + Uri.EscapeDataString($"An error occurred: {ex.Message}"));
             }
         }
 

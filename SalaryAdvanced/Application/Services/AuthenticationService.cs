@@ -86,113 +86,176 @@ namespace SalaryAdvanced.Application.Services
 
         public async Task<ApplicationUser?> GetCurrentUserAsync()
         {
-            var httpContext = _httpContextAccessor.HttpContext;
-            if (httpContext?.User?.Identity?.IsAuthenticated == true)
+            try
             {
-                var userId = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (int.TryParse(userId, out var id))
+                var httpContext = _httpContextAccessor.HttpContext;
+                if (httpContext?.User?.Identity?.IsAuthenticated == true)
                 {
-                    return await _userManager.Users
-                        .Include(u => u.Department)
-                        .FirstOrDefaultAsync(u => u.Id == id);
+                    var userId = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (int.TryParse(userId, out var id))
+                    {
+                        return await _userManager.Users
+                            .Include(u => u.Department)
+                            .FirstOrDefaultAsync(u => u.Id == id);
+                    }
                 }
+                return null;
             }
-            return null;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting current user");
+                throw new Exception(ex.Message, ex);
+            }
         }
 
         public async Task<bool> IsInRoleAsync(ApplicationUser user, string role)
         {
-            return await _userManager.IsInRoleAsync(user, role);
+            try
+            {
+                return await _userManager.IsInRoleAsync(user, role);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking user role for user {UserId}, role {Role}", user?.Id, role);
+                throw new Exception(ex.Message, ex);
+            }
         }
 
         public async Task<bool> RegisterAsync(ApplicationUser user, string password)
         {
-            var result = await _userManager.CreateAsync(user, password);
-            if (result.Succeeded)
+            try
             {
-                await _userManager.AddToRoleAsync(user, "Employee");
-
-                return true;
+                var result = await _userManager.CreateAsync(user, password);
+                if (result.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(user, "Employee");
+                    return true;
+                }
+                return false;
             }
-            return false;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error registering user {Email}", user?.Email);
+                throw new Exception(ex.Message, ex);
+            }
         }
 
         public async Task<bool> ChangePasswordAsync(ApplicationUser user, string currentPassword, string newPassword)
         {
-            var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
-            return result.Succeeded;
+            try
+            {
+                var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+                return result.Succeeded;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error changing password for user {UserId}", user?.Id);
+                throw new Exception(ex.Message, ex);
+            }
         }
 
         private async Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(ApplicationUser user)
         {
-            var roles = await _userManager.GetRolesAsync(user);
+            try
+            {
+                var roles = await _userManager.GetRolesAsync(user);
 
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new(ClaimTypes.Name, user.UserName ?? ""),
-                new(ClaimTypes.Email, user.Email ?? ""),
-                new("FullName", user.FullName),
-                new("EmployeeCode", user.EmployeeCode)
-            };
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
+                var claims = new List<Claim>
+                {
+                    new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new(ClaimTypes.Name, user.UserName ?? ""),
+                    new(ClaimTypes.Email, user.Email ?? ""),
+                    new("FullName", user.FullName),
+                    new("EmployeeCode", user.EmployeeCode)
+                };
+                foreach (var role in roles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+
+                var identity = new ClaimsIdentity(
+                    claims,
+                    IdentityConstants.ApplicationScheme);
+
+                return new ClaimsPrincipal(identity);
             }
-
-            var identity = new ClaimsIdentity(
-                claims,
-                IdentityConstants.ApplicationScheme);
-
-            return new ClaimsPrincipal(identity);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating claims principal for user {UserId}", user?.Id);
+                throw new Exception(ex.Message, ex);
+            }
         }
 
         public async Task<UserProfileDto?> GetUserProfileAsync()
         {
-            var currentUser = await GetCurrentUserAsync();
-            if (currentUser == null)
-                return null;
-
-            var roles = await _userManager.GetRolesAsync(currentUser);
-            var role = roles.FirstOrDefault() ?? "Employee";
-
-            return new UserProfileDto
+            try
             {
-                Id = currentUser.Id,
-                EmployeeCode = currentUser.EmployeeCode,
-                UserName = currentUser.UserName ?? "",
-                Email = currentUser.Email ?? "",
-                FullName = currentUser.FullName,
-                Phone = currentUser.PhoneNumber,
-                BasicSalary = currentUser.BasicSalary,
-                HireDate = currentUser.HireDate,
-                DepartmentId = currentUser.DepartmentId,
-                DepartmentName = currentUser.Department?.Name ?? "",
-                Role = role,
-                IsActive = currentUser.IsActive
-            };
+                var currentUser = await GetCurrentUserAsync();
+                if (currentUser == null)
+                    return null;
+
+                var roles = await _userManager.GetRolesAsync(currentUser);
+                var role = roles.FirstOrDefault() ?? "Employee";
+
+                return new UserProfileDto
+                {
+                    Id = currentUser.Id,
+                    EmployeeCode = currentUser.EmployeeCode,
+                    UserName = currentUser.UserName ?? "",
+                    Email = currentUser.Email ?? "",
+                    FullName = currentUser.FullName,
+                    Phone = currentUser.PhoneNumber,
+                    BasicSalary = currentUser.BasicSalary,
+                    HireDate = currentUser.HireDate,
+                    DepartmentId = currentUser.DepartmentId,
+                    DepartmentName = currentUser.Department?.Name ?? "",
+                    Role = role,
+                    IsActive = currentUser.IsActive
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting user profile");
+                throw new Exception(ex.Message, ex);
+            }
         }
 
         public async Task<bool> UpdateUserProfileAsync(UpdateUserProfileDto updateDto)
         {
-            var currentUser = await GetCurrentUserAsync();
-            if (currentUser == null)
-                return false;
+            try
+            {
+                var currentUser = await GetCurrentUserAsync();
+                if (currentUser == null)
+                    return false;
 
-            currentUser.FullName = updateDto.FullName;
-            currentUser.PhoneNumber = updateDto.Phone;
+                currentUser.FullName = updateDto.FullName;
+                currentUser.PhoneNumber = updateDto.Phone;
 
-            var result = await _userManager.UpdateAsync(currentUser);
-            return result.Succeeded;
+                var result = await _userManager.UpdateAsync(currentUser);
+                return result.Succeeded;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating user profile");
+                throw new Exception(ex.Message, ex);
+            }
         }
 
         public async Task<bool> ChangePasswordAsync(string currentPassword, string newPassword)
         {
-            var currentUser = await GetCurrentUserAsync();
-            if (currentUser == null)
-                return false;
+            try
+            {
+                var currentUser = await GetCurrentUserAsync();
+                if (currentUser == null)
+                    return false;
 
-            return await ChangePasswordAsync(currentUser, currentPassword, newPassword);
+                return await ChangePasswordAsync(currentUser, currentPassword, newPassword);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in change password wrapper method");
+                throw new Exception(ex.Message, ex);
+            }
         }
     }
 }

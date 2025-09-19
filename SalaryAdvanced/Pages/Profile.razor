@@ -7,7 +7,7 @@
 @inject IJSRuntime JSRuntime
 @attribute [Authorize]
 
-<PageTitle>Hồ Sơ Cá Nhân</PageTitle>
+<PageTitle>My Profile</PageTitle>
 
 <div class="container-fluid">
     <div class="row">
@@ -16,7 +16,7 @@
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
                         <i class="fas fa-user me-2"></i>
-                        Hồ Sơ Cá Nhân
+                        My Profile
                     </h4>
                 </div>
                 <div class="card-body">
@@ -24,7 +24,7 @@
                     {
                         <div class="text-center py-4">
                             <div class="spinner-border" role="status">
-                                <span class="visually-hidden">Đang tải...</span>
+                                <span class="visually-hidden">Loading...</span>
                             </div>
                         </div>
                     }
@@ -35,15 +35,15 @@
                                 @if (!isEditing)
                                 {
                                     <div class="row mb-3">
-                                        <div class="col-sm-4"><strong>Mã nhân viên:</strong></div>
+                                        <div class="col-sm-4"><strong>Employee Code:</strong></div>
                                         <div class="col-sm-8">@userProfile.EmployeeCode</div>
                                     </div>
                                     <div class="row mb-3">
-                                        <div class="col-sm-4"><strong>Tên đăng nhập:</strong></div>
+                                        <div class="col-sm-4"><strong>User Name:</strong></div>
                                         <div class="col-sm-8">@userProfile.UserName</div>
                                     </div>
                                     <div class="row mb-3">
-                                        <div class="col-sm-4"><strong>Họ và tên:</strong></div>
+                                        <div class="col-sm-4"><strong>Full Name:</strong></div>
                                         <div class="col-sm-8">@userProfile.FullName</div>
                                     </div>
                                     <div class="row mb-3">
@@ -51,21 +51,21 @@
                                         <div class="col-sm-8">@userProfile.Email</div>
                                     </div>
                                     <div class="row mb-3">
-                                        <div class="col-sm-4"><strong>Số điện thoại:</strong></div>
-                                        <div class="col-sm-8">@(userProfile.Phone ?? "Chưa cập nhật")</div>
+                                        <div class="col-sm-4"><strong>Phone:</strong></div>
+                                        <div class="col-sm-8">@(userProfile.Phone ?? "Not updated")</div>
                                     </div>
                                     <div class="row mb-3">
-                                        <div class="col-sm-4"><strong>Phòng ban:</strong></div>
+                                        <div class="col-sm-4"><strong>Department:</strong></div>
                                         <div class="col-sm-8">@userProfile.DepartmentName</div>
                                     </div>
                                     <div class="row mb-3">
-                                        <div class="col-sm-4"><strong>Chức vụ:</strong></div>
+                                        <div class="col-sm-4"><strong>Role:</strong></div>
                                         <div class="col-sm-8">
                                             <span class="badge bg-info">@userProfile.Role</span>
                                         </div>
                                     </div>
                                     <div class="row mb-3">
-                                        <div class="col-sm-4"><strong>Lương cơ bản:</strong></div>
+                                        <div class="col-sm-4"><strong>Basic Salary:</strong></div>
                                         <div class="col-sm-8">
                                             <span class="text-success fw-bold">
                                                 @userProfile.BasicSalary.ToString("N0") VNĐ
@@ -73,32 +73,31 @@
                                         </div>
                                     </div>
                                     <div class="row mb-3">
-                                        <div class="col-sm-4"><strong>Ngày vào làm:</strong></div>
+                                        <div class="col-sm-4"><strong>Hire Date:</strong></div>
                                         <div class="col-sm-8">@userProfile.HireDate.ToString("dd/MM/yyyy")</div>
                                     </div>
                                 }
                                 else
                                 {
-                                    <!-- Edit Mode -->
                                     <EditForm Model="updateModel" OnValidSubmit="UpdateProfileAsync">
                                         <DataAnnotationsValidator />
 
                                         <div class="row mb-3">
-                                            <div class="col-sm-4"><strong>Mã nhân viên:</strong></div>
+                                            <div class="col-sm-4"><strong>Employee Code:</strong></div>
                                             <div class="col-sm-8">
-                                                <span class="text-muted">@userProfile.EmployeeCode (Không thể thay đổi)</span>
+                                                <span class="text-muted">@userProfile.EmployeeCode (Can't edit)</span>
                                             </div>
                                         </div>
 
                                         <div class="row mb-3">
                                             <div class="col-sm-4"><strong>Email:</strong></div>
                                             <div class="col-sm-8">
-                                                <span class="text-muted">@userProfile.Email (Không thể thay đổi)</span>
+                                                <span class="text-muted">@userProfile.Email (Can't edit')</span>
                                             </div>
                                         </div>
 
                                         <div class="row mb-3">
-                                            <label class="col-sm-4 col-form-label"><strong>Họ và tên:</strong></label>
+                                            <label class="col-sm-4 col-form-label"><strong>Full Name:</strong></label>
                                             <div class="col-sm-8">
                                                 <InputText @bind-Value="updateModel.FullName" class="form-control" />
                                                 <ValidationMessage For="@(() => updateModel.FullName)" class="text-danger" />
@@ -106,7 +105,7 @@
                                         </div>
 
                                         <div class="row mb-3">
-                                            <label class="col-sm-4 col-form-label"><strong>Số điện thoại:</strong></label>
+                                            <label class="col-sm-4 col-form-label"><strong>Phone:</strong></label>
                                             <div class="col-sm-8">
                                                 <InputText @bind-Value="updateModel.Phone" class="form-control" />
                                                 <ValidationMessage For="@(() => updateModel.Phone)" class="text-danger" />
@@ -124,11 +123,11 @@
                                                     {
                                                         <i class="fas fa-save me-2"></i>
                                                     }
-                                                    Lưu thay đổi
+                                                    Save
                                                 </button>
                                                 <button type="button" class="btn btn-secondary" @onclick="CancelEdit">
                                                     <i class="fas fa-times me-2"></i>
-                                                    Hủy
+                                                    Cancel
                                                 </button>
                                             </div>
                                         </div>
@@ -136,7 +135,6 @@
                                 }
                             </div>
 
-                            <!-- Action Buttons -->
                             <div class="col-md-4">
                                 <div class="card bg-light">
                                     <div class="card-body text-center">
@@ -148,14 +146,14 @@
                                         {
                                             <button class="btn btn-outline-primary btn-sm w-100 mb-2" @onclick="StartEdit">
                                                 <i class="fas fa-edit me-2"></i>
-                                                Chỉnh sửa thông tin
+                                                Edit
                                             </button>
                                         }
 
                                         <button class="btn btn-outline-warning btn-sm w-100"
                                             @onclick="ShowChangePasswordModal">
                                             <i class="fas fa-key me-2"></i>
-                                            Đổi mật khẩu
+                                            Change password
                                         </button>
                                     </div>
                                 </div>
@@ -175,7 +173,7 @@
             <div class="modal-header">
                 <h5 class="modal-title">
                     <i class="fas fa-key me-2"></i>
-                    Đổi mật khẩu
+                    Change password
                 </h5>
                 <button type="button" class="btn-close" @onclick="HideChangePasswordModal"></button>
             </div>
@@ -184,7 +182,7 @@
                     <DataAnnotationsValidator />
 
                     <div class="mb-3">
-                        <label class="form-label">Mật khẩu hiện tại</label>
+                        <label class="form-label">Current password</label>
                         <div class="position-relative">
                             <InputText @bind-Value="changePasswordModel.CurrentPassword"
                                 type="@(showCurrentPassword ? "text" : "password")" class="form-control pe-5" />
@@ -198,7 +196,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Mật khẩu mới</label>
+                        <label class="form-label">New password</label>
                         <div class="position-relative">
                             <InputText @bind-Value="changePasswordModel.NewPassword"
                                 type="@(showNewPassword ? "text" : "password")" class="form-control pe-5" />
@@ -212,7 +210,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Xác nhận mật khẩu mới</label>
+                        <label class="form-label">Confirm new password</label>
                         <div class="position-relative">
                             <InputText @bind-Value="changePasswordModel.ConfirmPassword"
                                 type="@(showConfirmPassword ? "text" : "password")" class="form-control pe-5" />
@@ -235,7 +233,7 @@
 
                     <div class="text-end">
                         <button type="button" class="btn btn-secondary me-2" @onclick="HideChangePasswordModal">
-                            Hủy
+                            Cancel
                         </button>
                         <button type="submit" class="btn btn-warning" disabled="@isChangingPassword">
                             @if (isChangingPassword)
@@ -246,7 +244,7 @@
                             {
                                 <i class="fas fa-key me-2"></i>
                             }
-                            Đổi mật khẩu
+                            Change password
                         </button>
                     </div>
                 </EditForm>
@@ -331,16 +329,16 @@
             {
                 await LoadUserProfile();
                 isEditing = false;
-                ShowMessage("Cập nhật thông tin thành công!", true);
+                ShowMessage("Profile updated successfully!", true);
             }
             else
             {
-                ShowMessage("Có lỗi xảy ra khi cập nhật thông tin!", false);
+                ShowMessage("An error occurred while updating profile information!", false);
             }
         }
         catch (Exception ex)
         {
-            ShowMessage($"Lỗi: {ex.Message}", false);
+            ShowMessage($"Error: {ex.Message}", false);
         }
         finally
         {
@@ -369,7 +367,7 @@
     {
         if (changePasswordModel.NewPassword != changePasswordModel.ConfirmPassword)
         {
-            passwordChangeMessage = "Mật khẩu xác nhận không khớp!";
+            passwordChangeMessage = "Confirm password does not match!";
             passwordChangeSuccess = false;
             return;
         }
@@ -383,20 +381,20 @@
             changePasswordModel.NewPassword);
             if (result)
             {
-                passwordChangeMessage = "Đổi mật khẩu thành công!";
+                passwordChangeMessage = "Password changed successfully!";
                 passwordChangeSuccess = true;
                 await Task.Delay(2000);
                 HideChangePasswordModal();
             }
             else
             {
-                passwordChangeMessage = "Mật khẩu hiện tại không đúng hoặc mật khẩu mới không hợp lệ!";
+                passwordChangeMessage = "Current password is incorrect or new password is invalid!";
                 passwordChangeSuccess = false;
             }
         }
         catch (Exception ex)
         {
-            passwordChangeMessage = $"Lỗi: {ex.Message}";
+            passwordChangeMessage = $"Error: {ex.Message}";
             passwordChangeSuccess = false;
         }
         finally

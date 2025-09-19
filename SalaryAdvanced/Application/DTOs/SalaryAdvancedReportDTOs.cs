@@ -13,7 +13,7 @@ namespace SalaryAdvanced.Application.DTOs
         public DateTime RequestDate { get; set; }
         public DateTime? ApprovalDate { get; set; }
         public string Status { get; set; } = string.Empty;
-        public string? ApprovalNotes { get; set; }
+        public string? RejectReason { get; set; }
         public string? ApprovedByName { get; set; }
     }
 
