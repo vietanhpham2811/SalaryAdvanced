@@ -1,19 +1,22 @@
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using SalaryAdvanced.Infrastructure.Data;
+using SalaryAdvanced.Application.Interfaces;
+using SalaryAdvanced.Application.Mappings;
+using SalaryAdvanced.Application.Services;
+using SalaryAdvanced.Data;
 using SalaryAdvanced.Domain.Entities;
 using SalaryAdvanced.Domain.Interfaces;
-using SalaryAdvanced.Infrastructure.Repositories;
-using SalaryAdvanced.Application.Interfaces;
-using SalaryAdvanced.Application.Services;
 using SalaryAdvanced.Infrastructure.Auth;
+using SalaryAdvanced.Infrastructure.Data;
+using SalaryAdvanced.Infrastructure.Repositories;
+
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddControllers();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddControllers();
@@ -38,10 +41,10 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
     options.Password.RequiredLength = 6;
-    
+
     // User settings
     options.User.RequireUniqueEmail = true;
-    
+
     // Sign in settings
     options.SignIn.RequireConfirmedEmail = false;
     options.SignIn.RequireConfirmedPhoneNumber = false;
@@ -66,11 +69,14 @@ builder.Services.ConfigureApplicationCookie(options =>
 // Add Authorization policies
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("Employee", policy => 
+    options.AddPolicy("Employee", policy =>
         policy.RequireRole("Employee", "Manager"));
-    options.AddPolicy("Manager", policy => 
+    options.AddPolicy("Manager", policy =>
         policy.RequireRole("Manager"));
 });
+
+// Add AutoMapper
+builder.Services.AddAutoMapper(cfg => { cfg.AddProfile<DepartmentProfile>(); });
 
 // Add Repository pattern
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -82,6 +88,9 @@ builder.Services.AddScoped<ISystemSettingRepository, SystemSettingRepository>();
 
 // Add Application Services
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<ISalaryAdvanceRequestService, SalaryAdvanceRequestService>();
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+builder.Services.AddScoped<ISalaryAdvancedReportService, SalaryAdvanceReportService>();
 builder.Services.AddScoped<ISalaryAdvanceService, SalaryAdvanceService>();
 builder.Services.AddScoped<ILimitSalaryRepository, LimitSalaryService>();
 
@@ -154,7 +163,7 @@ static async Task SeedRolesAndUsersAsync(RoleManager<ApplicationRole> roleManage
         {
             context.Departments.Add(new Department
             {
-                Name = "Công nghệ thông tin",
+                Name = "Information Technology",
                 Code = "IT",
                 Description = "Phòng CNTT"
             });
@@ -199,19 +208,19 @@ static async Task SeedRolesAndUsersAsync(RoleManager<ApplicationRole> roleManage
 
         var managerResult = await userManager.CreateAsync(managerUser, "Manager123!");
         var employeeResult = await userManager.CreateAsync(employeeUser, "Employee123!");
-        
-        
+
+
         if (managerResult.Succeeded)
         {
             await userManager.AddToRoleAsync(managerUser, "Manager");
             department.ManagerId = managerUser.Id;
             context.Departments.Update(department);
         }
-        
+
         if (employeeResult.Succeeded)
         {
             await userManager.AddToRoleAsync(employeeUser, "Employee");
-        }       
+        }
         await context.SaveChangesAsync();
     }
 }

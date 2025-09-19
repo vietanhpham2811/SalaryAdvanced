@@ -8,7 +8,6 @@ namespace SalaryAdvanced.Infrastructure.Repositories
     {
         private readonly ApplicationDbContext _context;
         private IDbContextTransaction? _transaction;
-
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;

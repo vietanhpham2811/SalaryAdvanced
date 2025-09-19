@@ -45,7 +45,7 @@
                                    @oninput="@((e) => loginModel.Email = e.Value?.ToString() ?? "")"
                                    class="form-control" 
                                    id="inputEmail" 
-                                   placeholder="name@example.com" 
+                                   placeholder="tungctd.trial1@digitechs.vn" 
                                    required />
                             <label for="inputEmail">
                                 <i class="fas fa-envelope me-2"></i>Email
@@ -72,11 +72,11 @@
                                     tabindex="-1">
                                 @if (showPassword)
                                 {
-                                    <i class="fas fa-eye-slash" title="Ẩn mật khẩu"></i>
+                                    <i class="fas fa-eye-slash" title="Hide password"></i>
                                 }
                                 else
                                 {
-                                    <i class="fas fa-eye" title="Hiển thị mật khẩu"></i>
+                                    <i class="fas fa-eye" title="Show password"></i>
                                 }
                             </button>
                         </div>

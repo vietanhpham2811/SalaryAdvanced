@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SalaryAdvanced.Domain.Entities;
 using SalaryAdvanced.Domain.Interfaces;
 using SalaryAdvanced.Infrastructure.Data;
@@ -7,29 +7,27 @@ namespace SalaryAdvanced.Infrastructure.Repositories
 {
     public class DepartmentRepository : Repository<Department>, IDepartmentRepository
     {
-        public DepartmentRepository(ApplicationDbContext context) : base(context)
+        public DepartmentRepository(ApplicationDbContext context): base(context)
         {
         }
-
-        public async Task<Department?> GetByCodeAsync(string code)
+        public async Task<bool> DeleteAsync(int id)
         {
-            return await _dbSet
-                .Include(d => d.Manager)
-                .FirstOrDefaultAsync(d => d.Code == code);
+            var department = await _dbSet.FirstOrDefaultAsync(d => d.Id == id);
+            if (department == null)
+                return false;
+            _dbSet.Remove(department);
+            return true;
         }
-
-        public async Task<Department?> GetWithManagerAsync(int id)
+        public async Task<Department?> UpdateAsync(int id, Department dept)
         {
-            return await _dbSet
-                .Include(d => d.Manager)
-                .FirstOrDefaultAsync(d => d.Id == id);
-        }
-
-        public async Task<IEnumerable<Department>> GetAllWithManagersAsync()
-        {
-            return await _dbSet
-                .Include(d => d.Manager)
-                .ToListAsync();
+            var existingDepartment = await _dbSet.FirstOrDefaultAsync(d => d.Id == id);
+            if (existingDepartment == null)
+                return null;
+            existingDepartment.Name = dept.Name;
+            existingDepartment.Code = dept.Code;
+            existingDepartment.Description = dept.Description;
+            existingDepartment.ManagerId = dept.ManagerId;
+            return existingDepartment;
         }
     }
 }

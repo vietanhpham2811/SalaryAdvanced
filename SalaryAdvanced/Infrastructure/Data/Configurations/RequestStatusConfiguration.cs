@@ -22,9 +22,9 @@ namespace SalaryAdvanced.Infrastructure.Data.Configurations
 
             // Seed data
             builder.HasData(
-                new RequestStatus { Id = 1, Name = "Pending", Description = "Chờ phê duyệt", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new RequestStatus { Id = 2, Name = "Approved", Description = "Đã phê duyệt", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new RequestStatus { Id = 3, Name = "Rejected", Description = "Đã từ chối", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+                new RequestStatus { Id = 1, Name = "Pending", Description = "Pending approval", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new RequestStatus { Id = 2, Name = "Approved", Description = "Approved", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new RequestStatus { Id = 3, Name = "Rejected", Description = "Rejected", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
             );
         }
     }
