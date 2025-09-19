@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using SalaryAdvanced.Application.Interfaces;
 using SalaryAdvanced.Application.Mappings;
 using SalaryAdvanced.Application.Services;
-using SalaryAdvanced.Data;
 using SalaryAdvanced.Domain.Entities;
 using SalaryAdvanced.Domain.Interfaces;
 using SalaryAdvanced.Infrastructure.Auth;
@@ -48,6 +47,7 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     // Sign in settings
     options.SignIn.RequireConfirmedEmail = false;
     options.SignIn.RequireConfirmedPhoneNumber = false;
+
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
@@ -90,6 +90,7 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<ISalaryAdvanceRequestService, SalaryAdvanceRequestService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddScoped<ISalaryAdvancedReportService, SalaryAdvanceReportService>();
+builder.Services.AddScoped<ILimitSalaryRepository, LimitSalaryService>();
 
 // Add HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
@@ -97,8 +98,8 @@ builder.Services.AddHttpContextAccessor();
 // Add Authentication State Provider for Blazor Server
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
+
 // Legacy service for sample pages
-builder.Services.AddSingleton<WeatherForecastService>();
 
 var app = builder.Build();
 

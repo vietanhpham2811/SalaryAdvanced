@@ -15,6 +15,7 @@ namespace SalaryAdvanced.Infrastructure.Data
         public DbSet<RequestStatus> RequestStatuses { get; set; } = null!;
         public DbSet<SalaryAdvanceRequest> SalaryAdvanceRequests { get; set; } = null!;
         public DbSet<SystemSetting> SystemSettings { get; set; } = null!;
+        public DbSet<LimitSalary> LimitSalarys { get; set; } = null!;
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -26,6 +27,7 @@ namespace SalaryAdvanced.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new RequestStatusConfiguration());
             modelBuilder.ApplyConfiguration(new SalaryAdvanceRequestConfiguration());
             modelBuilder.ApplyConfiguration(new SystemSettingConfiguration());
+            modelBuilder.ApplyConfiguration(new LimitSalaryConfiguration());
 
             modelBuilder.Entity<ApplicationUser>().ToTable("application_users");
             modelBuilder.Entity<ApplicationRole>().ToTable("application_roles");
