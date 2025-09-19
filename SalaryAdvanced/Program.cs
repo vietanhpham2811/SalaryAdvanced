@@ -45,6 +45,7 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     // Sign in settings
     options.SignIn.RequireConfirmedEmail = false;
     options.SignIn.RequireConfirmedPhoneNumber = false;
+
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
@@ -89,6 +90,7 @@ builder.Services.AddHttpContextAccessor();
 
 // Add Authentication State Provider for Blazor Server
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+
 
 // Legacy service for sample pages
 

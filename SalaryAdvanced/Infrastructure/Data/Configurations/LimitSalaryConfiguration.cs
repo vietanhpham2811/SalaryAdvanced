@@ -6,7 +6,6 @@ public class LimitSalaryConfiguration : IEntityTypeConfiguration<LimitSalary>
 {
     public void Configure(EntityTypeBuilder<LimitSalary> builder)
     {
-        // Đặt tên bảng là "limitsalary" (không dấu gạch dưới)
         builder.ToTable("limitsalary");
 
         builder.HasKey(x => x.Id);
@@ -26,29 +25,37 @@ public class LimitSalaryConfiguration : IEntityTypeConfiguration<LimitSalary>
             .IsRequired();
 
         builder.Property(x => x.ObjectId)
-            .HasColumnName("objectid")  // không gạch dưới theo yêu cầu
+            .HasColumnName("objectid") 
             .IsRequired();
 
         builder.Property(x => x.MaxOncePercent)
-            .HasColumnName("maxoncepercent")  // không gạch dưới
+            .HasColumnName("maxoncepercent")  
             .HasPrecision(5, 2)
             .IsRequired();
 
         builder.Property(x => x.MaxTimesPerMonth)
-            .HasColumnName("maxtimespermonth") // không gạch dưới
+            .HasColumnName("maxtimespermonth") 
             .IsRequired();
 
         builder.Property(x => x.MaxMonthlyPercent)
-            .HasColumnName("maxmonthlypercent")  // không gạch dưới
+            .HasColumnName("maxmonthlypercent") 
             .HasPrecision(5, 2)
             .IsRequired();
 
         builder.Property(x => x.ValidFromDay)
-            .HasColumnName("validfromday")  // không gạch dưới
+            .HasColumnName("validfromday")  
             .IsRequired();
 
         builder.Property(x => x.ValidToDay)
-            .HasColumnName("validtoday")  // không gạch dưới
+            .HasColumnName("validtoday")  
             .IsRequired();
+        builder.Property(x => x.create_date)
+       .HasColumnName("create_date") // khớp cột "CreateDate"
+       .HasDefaultValueSql("NOW() AT TIME ZONE 'UTC'");
+
+        builder.Property(x => x.last_change)
+               .HasColumnName("last_change") // khớp cột "LastChange"
+            .HasDefaultValueSql("NOW() AT TIME ZONE 'UTC'");
+
     }
 }

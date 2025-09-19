@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SalaryAdvanced.Application.DTOs;
 using SalaryAdvanced.Application.Interfaces;
 using SalaryAdvanced.Domain.Entities;
 using SalaryAdvanced.Infrastructure.Data;
@@ -16,9 +17,18 @@ namespace SalaryAdvanced.Application.Services
 
         public async Task<List<LimitSalary>> GetAllAsync()
         {
-            return await _context.LimitSalarys.ToListAsync();
+            return await _context.LimitSalarys.OrderByDescending(x=>x.last_change).ToListAsync();
         }
-
+        public async Task<List<DepartmentDto>> GetDepartmentsAsync()
+        {
+            return await _context.Departments
+                .Select(d => new DepartmentDto
+                {
+                    Id = d.Id,
+                    Name = d.Name
+                })
+                .ToListAsync();
+        }
         public async Task<LimitSalary?> GetByIdAsync(int id)
         {
             return await _context.LimitSalarys.FindAsync(id);
@@ -36,12 +46,12 @@ namespace SalaryAdvanced.Application.Services
             {
                 query = query.Where(x => x.Type.Contains(filter.Type));
             }
-            if (filter.ObjectId != 0)
+            if (filter.ObjectId.HasValue)
             {
                 query = query.Where(x => x.ObjectId == filter.ObjectId);
             }
 
-            return await query.ToListAsync();
+            return await query.OrderByDescending(x=>x.create_date).ToListAsync();
         }
 
         public async Task AddAsync(LimitSalary item)
@@ -52,9 +62,22 @@ namespace SalaryAdvanced.Application.Services
 
         public async Task UpdateAsync(LimitSalary item)
         {
-            _context.LimitSalarys.Update(item);
-            await _context.SaveChangesAsync();
+            var existing = await _context.LimitSalarys.FindAsync(item.Id);
+            if (existing != null)
+            {
+                existing.Name = item.Name;
+                existing.Type = item.Type;
+                existing.ObjectId = item.ObjectId;
+                existing.MaxOncePercent = item.MaxOncePercent;
+                existing.MaxTimesPerMonth = item.MaxTimesPerMonth;
+                existing.MaxMonthlyPercent = item.MaxMonthlyPercent;
+                existing.ValidFromDay = item.ValidFromDay;
+                existing.ValidToDay = item.ValidToDay;
+                existing.last_change = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
         }
+
 
         public async Task DeleteAsync(int id)
         {

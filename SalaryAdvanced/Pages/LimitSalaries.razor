@@ -1,5 +1,6 @@
 ﻿@page "/limitsalaries"
 @using Microsoft.EntityFrameworkCore
+@using SalaryAdvanced.Application.DTOs
 @using SalaryAdvanced.Domain.Entities
 @using SalaryAdvanced.Infrastructure.Data
 @inject ApplicationDbContext DbContext
@@ -11,45 +12,71 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
+    @if (!string.IsNullOrEmpty(customErrorMessage))
+    {
+        <div class="alert alert-danger">@customErrorMessage</div>
+    }
+
     <div class="row">
         <div class="col-12 col-md-6 mb-3">
             <label>Name</label>
             <InputText class="form-control" @bind-Value="limitSalaryModel.Name" />
+            <ValidationMessage For="@(() => limitSalaryModel.Name)" class="text-danger" />
         </div>
         <div class="col-12 col-md-6 mb-3">
             <label>Type</label>
             <InputSelect class="form-control" @bind-Value="limitSalaryModel.Type">
-                <option value="">-- Chọn Type --</option>
+                <option value="">-- Select Type --</option>
                 <option value="E">Employee</option>
                 <option value="D">Department</option>
             </InputSelect>
-
+            <ValidationMessage For="@(() => limitSalaryModel.Type)" class="text-danger" />
         </div>
         <div class="col-12 col-md-6 mb-3">
-            <label>ObjectId</label>
-            <InputNumber class="form-control" @bind-Value="limitSalaryModel.ObjectId" />
+            <label>Employee/Department</label>
+            <div class="position-relative">
+                <InputText class="form-control" @bind-Value="departmentSearch" @oninput="OnDepartmentSearchChanged" placeholder="Enter employee\epartment name..." />
+            <ValidationMessage For="@(() => limitSalaryModel.ObjectId)" class="text-danger" />
+
+            @if (filteredDepartments.Any())
+            {
+                <ul class="list-group position-absolute col-6"style="z-index:1000; width:100%;">
+                    @foreach (var dept in filteredDepartments)
+                    {
+                        <li class="list-group-item list-group-item-action"
+                            @onclick="() => SelectDepartment(dept)">
+                            @dept.Name
+                        </li>
+                    }
+                </ul>
+                }
+            </div>
         </div>
         <div class="col-12 col-md-6 mb-3">
             <label>Max Once %</label>
             <InputNumber class="form-control" @bind-Value="limitSalaryModel.MaxOncePercent" step="0.01" />
+            <ValidationMessage For="@(() => limitSalaryModel.MaxOncePercent)" class="text-danger" />
         </div>
         <div class="col-12 col-md-6 mb-3">
             <label>Max Times/Month</label>
             <InputNumber class="form-control" @bind-Value="limitSalaryModel.MaxTimesPerMonth" />
+            <ValidationMessage For="@(() => limitSalaryModel.MaxTimesPerMonth)" class="text-danger" />
         </div>
         <div class="col-12 col-md-6 mb-3">
             <label>Max Monthly %</label>
             <InputNumber class="form-control" @bind-Value="limitSalaryModel.MaxMonthlyPercent" step="0.01" />
+            <ValidationMessage For="@(() => limitSalaryModel.MaxMonthlyPercent)" class="text-danger" />
         </div>
         <div class="col-12 col-md-6 mb-3">
             <label>Valid From Day</label>
             <InputNumber class="form-control" @bind-Value="limitSalaryModel.ValidFromDay" />
+            <ValidationMessage For="@(() => limitSalaryModel.ValidFromDay)" class="text-danger" />
         </div>
         <div class="col-12 col-md-6 mb-3">
             <label>Valid To Day</label>
             <InputNumber class="form-control" @bind-Value="limitSalaryModel.ValidToDay" />
+            <ValidationMessage For="@(() => limitSalaryModel.ValidToDay)" class="text-danger" />
         </div>
-
     </div>
 
     <div class="mb-3">
@@ -58,6 +85,21 @@
         <button type="button" class="btn btn-secondary" @onclick="OnClear">Clear</button>
     </div>
 </EditForm>
+@if (showSuccessToast)
+{
+    <div class="toast align-items-center text-bg-success border-0 show"
+         role="alert" aria-live="assertive" aria-atomic="true"
+         style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 250px;background-color: darkseagreen;
+        color: white;">
+        <div class="d-flex">
+            <div class="toast-body">
+                @(isEditMode ? "Edit successfully!" : "Add successfully!")
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                    @onclick="HideSuccessToast" aria-label="Close"></button>
+        </div>
+    </div>
+}
 
 <hr />
 
@@ -74,7 +116,7 @@ else
     <table class="table table-bordered table-striped">
         <thead>
             <tr>
-                <th>Id</th>
+            
                 <th>Name</th>
                 <th>Type</th>
                 <th>ObjectId</th>
@@ -83,60 +125,179 @@ else
                 <th>Max Monthly %</th>
                 <th>Valid From Day</th>
                 <th>Valid To Day</th>
+                <th>Create Date</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in limitSalaries)
+            @foreach (var item in PagedData)
             {
                 <tr>
-                    <td>@item.Id</td>
+                    <td class="d-none" >@item.Id</td>
                     <td>@item.Name</td>
-                    <td>@item.Type</td>
-                    <td>@item.ObjectId</td>
+                    <td>@(item.Type == "E" ? "Employee" : item.Type == "D" ? "Department" : item.Type)</td>
+                    <td>@GetDepartmentName(item.ObjectId)</td>
                     <td>@item.MaxOncePercent</td>
                     <td>@item.MaxTimesPerMonth</td>
                     <td>@item.MaxMonthlyPercent</td>
                     <td>@item.ValidFromDay</td>
                     <td>@item.ValidToDay</td>
+                    <td>@item.create_date.ToString("dd/MM/yyyy")</td>
+
+
                     <td>
                         <button class="btn btn-sm btn-warning me-2" @onclick="() => OnEdit(item.Id)">Edit</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => OnDelete(item.Id)">Delete</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => ShowDeleteConfirm(item.Id)">Delete</button>
+
+                        @if (showDeleteModal)
+                        {
+                            <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.1);">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Confirm Delete</h5>
+                                            <button type="button" class="btn-close" @onclick="HideDeleteConfirm"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Are you sure you want to delete this record?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn btn-secondary" @onclick="HideDeleteConfirm">Cancel</button>
+                                            <button class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
                     </td>
                 </tr>
             }
         </tbody>
     </table>
+    // Pagination Controls
+    <div class="d-flex justify-content-center mt-3">
+        <button class="btn btn-sm btn-outline-primary me-2"
+                @onclick="PrevPage" disabled="@(CurrentPage == 1)">
+            Previous
+        </button>
+
+        <span class="align-self-center">Page @CurrentPage / @TotalPages</span>
+
+        <button class="btn btn-sm btn-outline-primary ms-2"
+                @onclick="NextPage" disabled="@(CurrentPage == TotalPages)">
+            Next
+        </button>
+    </div>
 }
 
 @code {
-    private LimitSalary limitSalaryModel = new LimitSalary();
+    private LimitSalary limitSalaryModel = new LimitSalary
+    {
+        MaxOncePercent = 0,
+        MaxTimesPerMonth = 0,
+        MaxMonthlyPercent = 0,
+        ValidFromDay = 0,
+        ValidToDay = 0
+    };
+
     private List<LimitSalary> limitSalaries;
+    private int CurrentPage = 1;   // trang hiện tại
+    private int PageSize = 7;      // số dòng mỗi trang
+    private int TotalPages => (int)Math.Ceiling((limitSalaries?.Count ?? 0) / (double)PageSize);
+    private List<DepartmentDto> departments = new();
     private bool isEditMode = false;
+    private string customErrorMessage = string.Empty;
+    private string departmentSearch = "";
+    private List<DepartmentDto> filteredDepartments = new();
+    private bool showDeleteModal = false;
+    private int deleteId = 0;
+    private bool showSuccessToast = false;
+
+    //pagination
+
+    private IEnumerable<LimitSalary> PagedData =>
+        limitSalaries?
+            .Skip((CurrentPage - 1) * PageSize)
+            .Take(PageSize)
+            .ToList() ?? new List<LimitSalary>();
+
+    private void NextPage()
+    {
+        if (CurrentPage < TotalPages)
+            CurrentPage++;
+    }
+
+    private void PrevPage()
+    {
+        if (CurrentPage > 1)
+            CurrentPage--;
+    }
+
+    private void GoToPage(int page)
+    {
+        if (page >= 1 && page <= TotalPages)
+            CurrentPage = page;
+    }
+    //end pagination
+
+
 
     protected override async Task OnInitializedAsync()
     {
         await LoadAll();
+
     }
 
     private async Task LoadAll()
     {
         limitSalaries = await LimitSalaryService.GetAllAsync();
+        departments = await LimitSalaryService.GetDepartmentsAsync();
+
 
     }
+    private bool ValidateForm()
+    {   
+        customErrorMessage = string.Empty;
 
+        var exists = DbContext.Departments.Any(x => x.Id == limitSalaryModel.ObjectId);
+        if(exists != true)
+        {
+            customErrorMessage = "Employee/Department not exist";
+            return false;
+        }
+        if (limitSalaryModel.ValidFromDay > limitSalaryModel.ValidToDay)
+        {
+            customErrorMessage = "Valid From Day must be less than or equal to Valid To Day!";
+            return false;
+        }
+
+
+        return true;
+    }
+    private string GetDepartmentName(int? objectId)
+    {
+        var dept = departments.FirstOrDefault(d => d.Id == objectId);
+        return dept?.Name ?? "";
+    }
     private async Task OnCreate()
     {
+        if (!ValidateForm())
+        {
+            return;
+        }
         if (isEditMode)
         {
             await LimitSalaryService.UpdateAsync(limitSalaryModel);
+            ShowSuccessToast();
             isEditMode = false;
         }
         else
         {
             await LimitSalaryService.AddAsync(limitSalaryModel);
+            ShowSuccessToast();
         }
 
-        await LoadAll();
+
+        await OnClear();
 
         limitSalaryModel = new LimitSalary();
     }
@@ -148,8 +309,17 @@ else
 
     private async Task OnClear()
     {
-        limitSalaryModel = new LimitSalary();
+        limitSalaryModel = new LimitSalary
+        {
+            MaxOncePercent = 0,
+            MaxTimesPerMonth = 0,
+            MaxMonthlyPercent = 0,
+            ValidFromDay = 0,
+            ValidToDay = 0
+        };
         isEditMode = false;
+        departmentSearch = "";
+        filteredDepartments.Clear();
         await LoadAll();
     }
 
@@ -158,11 +328,42 @@ else
         var item = await LimitSalaryService.GetByIdAsync(id);
         if (item != null)
         {
-            limitSalaryModel = item;
+            limitSalaryModel = new LimitSalary
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Type = item.Type,
+                ObjectId = item.ObjectId,
+                MaxOncePercent = item.MaxOncePercent,
+                MaxTimesPerMonth = item.MaxTimesPerMonth,
+                MaxMonthlyPercent = item.MaxMonthlyPercent,
+                ValidFromDay = item.ValidFromDay,
+                ValidToDay = item.ValidToDay
+            };
+            departmentSearch = GetDepartmentName(limitSalaryModel.ObjectId);
             isEditMode = true;
+         
         }
     }
 
+    private void ShowDeleteConfirm(int id)
+    {
+        deleteId = id;
+        showDeleteModal = true;
+    }
+
+    private void HideDeleteConfirm()
+    {
+        showDeleteModal = false;
+        deleteId = 0;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        await OnDelete(deleteId);
+        showDeleteModal = false;
+        deleteId = 0;
+    }
     private async Task OnDelete(int id)
     {
         await LimitSalaryService.DeleteAsync(id);
@@ -172,6 +373,44 @@ else
             limitSalaryModel = new LimitSalary();
             isEditMode = false;
         }
+    }
+
+    private void OnDepartmentSearchChanged(ChangeEventArgs e)
+    {
+        departmentSearch = e.Value?.ToString() ?? "";
+        if (string.IsNullOrWhiteSpace(departmentSearch))
+        {
+            filteredDepartments = new List<DepartmentDto>();
+        }
+        else
+        {
+            filteredDepartments = departments
+                .Where(d => !string.IsNullOrEmpty(d.Name) && d.Name.Contains(departmentSearch, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    private void SelectDepartment(DepartmentDto dept)
+    {
+        limitSalaryModel.ObjectId = dept.Id;
+        departmentSearch = dept.Name;
+        filteredDepartments.Clear();
+    }
+    private void ShowSuccessToast()
+    {
+        showSuccessToast = true;
+      
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(2000);
+            showSuccessToast = false;
+            StateHasChanged();
+        });
+    }
+
+    private void HideSuccessToast()
+    {
+        showSuccessToast = false;
     }
 }
 
