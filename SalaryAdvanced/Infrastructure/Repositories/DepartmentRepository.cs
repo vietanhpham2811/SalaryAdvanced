@@ -5,7 +5,7 @@ using SalaryAdvanced.Infrastructure.Data;
 
 namespace SalaryAdvanced.Infrastructure.Repositories
 {
-    public class DepartmentRepository : Repository<Department> ,IDepartmentRepository
+    public class DepartmentRepository : Repository<Department>, IDepartmentRepository
     {
         public DepartmentRepository(ApplicationDbContext context): base(context)
         {
@@ -15,7 +15,7 @@ namespace SalaryAdvanced.Infrastructure.Repositories
             var department = await _dbSet.FirstOrDefaultAsync(d => d.Id == id);
             if (department == null)
                 return false;
-            _context.Departments.Remove(department);
+            _dbSet.Remove(department);
             return true;
         }
         public async Task<Department?> UpdateAsync(int id, Department dept)

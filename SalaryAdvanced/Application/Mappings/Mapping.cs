@@ -8,6 +8,8 @@ namespace SalaryAdvanced.Application.Mappings
         {
             CreateMap<Domain.Entities.Department, DTOs.DepartmentDTO>().ReverseMap();
             CreateMap<Domain.Entities.Department, DTOs.GetDepartmentDTO>().ReverseMap();
+            CreateMap<Domain.Entities.SalaryAdvanceRequest, DTOs.CreateRequestDTO>().ReverseMap();
+            CreateMap<Domain.Entities.SalaryAdvanceRequest, DTOs.GetRequestDTO>().ReverseMap();
         }
     }
 }

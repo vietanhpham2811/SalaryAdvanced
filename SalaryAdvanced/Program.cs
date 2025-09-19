@@ -85,7 +85,7 @@ builder.Services.AddScoped<ISystemSettingRepository, SystemSettingRepository>();
 
 // Add Application Services
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-builder.Services.AddScoped<ISalaryAdvanceService, SalaryAdvanceService>();
+builder.Services.AddScoped<ISalaryAdvanceRequestService, SalaryAdvanceRequestService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 
 // Add HttpContextAccessor
