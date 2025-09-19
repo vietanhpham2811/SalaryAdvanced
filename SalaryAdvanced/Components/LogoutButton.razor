@@ -1,0 +1,70 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using SalaryAdvanced.Application.Interfaces
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<button class="@CssClass" @onclick="HandleLogoutClick" disabled="@isLoading">
+    @if (isLoading)
+    {
+        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+        <span>Đang đăng xuất...</span>
+    }
+    else
+    {
+        <i class="fas fa-sign-out-alt me-1"></i>
+        <span>@Text</span>
+    }
+</button>
+
+@code {
+    [Parameter] public string CssClass { get; set; } = "btn btn-outline-danger btn-sm";
+    [Parameter] public string Text { get; set; } = "Đăng xuất";
+    [Parameter] public bool ConfirmBeforeLogout { get; set; } = true;
+    [Parameter] public EventCallback OnLogout { get; set; }
+
+    private bool isLoading = false;
+
+    private async Task HandleLogoutClick()
+    {
+        if (isLoading) return;
+
+        try
+        {
+            Console.WriteLine("Logout button clicked");
+            
+            if (ConfirmBeforeLogout)
+            {
+                bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Bạn có chắc chắn muốn đăng xuất?");
+                if (!confirmed) 
+                {
+                    Console.WriteLine("User cancelled logout");
+                    return;
+                }
+            }
+
+            isLoading = true;
+            Console.WriteLine("Starting logout process");
+
+            await AuthService.SignOutAsync();
+            Console.WriteLine("Logout service called successfully");
+
+            if (OnLogout.HasDelegate)
+            {
+                await OnLogout.InvokeAsync();
+            }
+            Navigation.NavigateTo("/logout", forceLoad: true);
+            Console.WriteLine("Redirecting to logout endpoint");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Logout error: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            Navigation.NavigateTo("/logout", forceLoad: true);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

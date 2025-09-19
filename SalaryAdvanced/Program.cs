@@ -17,13 +17,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddControllers();
 
 // Add Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-    
-    // Enable detailed errors in development
     if (builder.Environment.IsDevelopment())
     {
         options.EnableSensitiveDataLogging();
@@ -54,13 +53,14 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 // Configure cookie settings
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Account/Login";
-    options.LogoutPath = "/Account/Logout";
-    options.AccessDeniedPath = "/Account/AccessDenied";
-    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.LoginPath = "/login";
+    options.LogoutPath = "/login";
+    options.AccessDeniedPath = "/login";
+    options.ExpireTimeSpan = TimeSpan.FromHours(8); // Default for non-persistent cookies
     options.SlidingExpiration = true;
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // Allow HTTP for development
 });
 
 // Add Authorization policies
@@ -107,24 +107,18 @@ if (!app.Environment.IsDevelopment())
 }
 else
 {
-    // Auto-migrate database in development
     using (var scope = app.Services.CreateScope())
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
-        
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
         try
         {
-            // Migrate database
-            dbContext.Database.Migrate();
-            
-            // Seed roles
             await SeedRolesAndUsersAsync(roleManager, userManager, dbContext);
         }
         catch (Exception ex)
         {
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
             logger.LogError(ex, "An error occurred while migrating the database.");
         }
     }
@@ -135,22 +129,20 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Add Authentication & Authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapRazorPages();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 app.Run();
 
-// Helper method to seed initial data
 static async Task SeedRolesAndUsersAsync(RoleManager<ApplicationRole> roleManager, UserManager<ApplicationUser> userManager, ApplicationDbContext context)
 {
-    // Create roles if they don't exist
     string[] roles = { "Manager", "Employee" };
-    
+
     foreach (string role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))
@@ -158,11 +150,9 @@ static async Task SeedRolesAndUsersAsync(RoleManager<ApplicationRole> roleManage
             await roleManager.CreateAsync(new ApplicationRole { Name = role, Description = role });
         }
     }
-    
-    // Create default admin user
+
     if (!await userManager.Users.AnyAsync())
     {
-        // First, ensure we have departments and roles in the database
         if (!context.Departments.Any())
         {
             context.Departments.Add(new Department
@@ -173,47 +163,58 @@ static async Task SeedRolesAndUsersAsync(RoleManager<ApplicationRole> roleManage
             });
             await context.SaveChangesAsync();
         }
-        
-        // Seed ApplicationRoles - roleManager is already provided as parameter
         if (!await roleManager.RoleExistsAsync("Employee"))
         {
             await roleManager.CreateAsync(new ApplicationRole { Name = "Employee" });
         }
-        
+
         if (!await roleManager.RoleExistsAsync("Manager"))
         {
             await roleManager.CreateAsync(new ApplicationRole { Name = "Manager" });
         }
-        
-        if (!await roleManager.RoleExistsAsync("Admin"))
-        {
-            await roleManager.CreateAsync(new ApplicationRole { Name = "Admin" });
-        }
-        
+
         var department = context.Departments.First();
-        
-        var adminUser = new ApplicationUser
+
+        var managerUser = new ApplicationUser
         {
-            EmployeeCode = "ADM001",
-            FullName = "System Administrator",
-            UserName = "admin",
-            Email = "admin@company.com",
+            EmployeeCode = "MAN001",
+            FullName = "Manager Test",
+            UserName = "manager",
+            Email = "manager@company.com",
             EmailConfirmed = true,
             DepartmentId = department.Id,
-            BasicSalary = 25000000,
-            HireDate = DateTime.Now.AddYears(-2),
+            BasicSalary = 15000000,
+            HireDate = DateTime.UtcNow.AddYears(-1),
             IsActive = true
         };
-        
-        var result = await userManager.CreateAsync(adminUser, "Admin123!");
-        if (result.Succeeded)
+        var employeeUser = new ApplicationUser
         {
-            await userManager.AddToRoleAsync(adminUser, "Admin");
-            
-            // Update department manager
-            department.ManagerId = adminUser.Id;
+            EmployeeCode = "EMP001",
+            FullName = "Employee Test",
+            UserName = "employee",
+            Email = "employee@company.com",
+            EmailConfirmed = true,
+            DepartmentId = department.Id,
+            BasicSalary = 10000000,
+            HireDate = DateTime.UtcNow.AddMonths(-6),
+            IsActive = true
+        };
+
+        var managerResult = await userManager.CreateAsync(managerUser, "Manager123!");
+        var employeeResult = await userManager.CreateAsync(employeeUser, "Employee123!");
+        
+        
+        if (managerResult.Succeeded)
+        {
+            await userManager.AddToRoleAsync(managerUser, "Manager");
+            department.ManagerId = managerUser.Id;
             context.Departments.Update(department);
-            await context.SaveChangesAsync();
         }
+        
+        if (employeeResult.Succeeded)
+        {
+            await userManager.AddToRoleAsync(employeeUser, "Employee");
+        }       
+        await context.SaveChangesAsync();
     }
 }

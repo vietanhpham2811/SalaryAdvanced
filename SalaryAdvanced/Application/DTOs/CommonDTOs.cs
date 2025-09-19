@@ -22,17 +22,11 @@ namespace SalaryAdvanced.Application.DTOs
         public DateTime? ProcessedAt { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? RejectionReason { get; set; }
-
-        // Employee info
         public string EmployeeName { get; set; } = string.Empty;
         public string EmployeeCode { get; set; } = string.Empty;
         public string DepartmentName { get; set; } = string.Empty;
         public decimal BasicSalary { get; set; }
-
-        // Approver info
         public string? ApproverName { get; set; }
-
-        // Calculated fields
         public decimal PercentageOfSalary { get; set; }
         public int ProcessingHours { get; set; }
     }
