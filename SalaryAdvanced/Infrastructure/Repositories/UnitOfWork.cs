@@ -1,8 +1,6 @@
-using AutoMapper;
 using Microsoft.EntityFrameworkCore.Storage;
 using SalaryAdvanced.Domain.Interfaces;
 using SalaryAdvanced.Infrastructure.Data;
-using SalaryAdvanced.Repositories;
 
 namespace SalaryAdvanced.Infrastructure.Repositories
 {
@@ -10,7 +8,7 @@ namespace SalaryAdvanced.Infrastructure.Repositories
     {
         private readonly ApplicationDbContext _context;
         private IDbContextTransaction? _transaction;
-        public UnitOfWork(ApplicationDbContext context, IMapper mapper)
+        public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
             

@@ -55,7 +55,7 @@ namespace SalaryAdvanced.Application.Services
 
         public async Task<bool> DepartmentExist(int id)
         {
-            return await _unitOfWork.Departments.ExistsAsync(id);
+            return await _unitOfWork.Departments.ExistsAsync(d=>d.Id == id );
         }
     }
 }

@@ -10,7 +10,6 @@ using SalaryAdvanced.Domain.Interfaces;
 using SalaryAdvanced.Infrastructure.Auth;
 using SalaryAdvanced.Infrastructure.Data;
 using SalaryAdvanced.Infrastructure.Repositories;
-using SalaryAdvanced.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
