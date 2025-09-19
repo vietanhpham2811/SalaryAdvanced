@@ -8,7 +8,7 @@
     @if (isLoading)
     {
         <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-        <span>Đang đăng xuất...</span>
+        <span>Signing out...</span>
     }
     else
     {
@@ -19,7 +19,7 @@
 
 @code {
     [Parameter] public string CssClass { get; set; } = "btn btn-outline-danger btn-sm";
-    [Parameter] public string Text { get; set; } = "Đăng xuất";
+    [Parameter] public string Text { get; set; } = "Sign out";
     [Parameter] public bool ConfirmBeforeLogout { get; set; } = true;
     [Parameter] public EventCallback OnLogout { get; set; }
 
@@ -35,7 +35,7 @@
             
             if (ConfirmBeforeLogout)
             {
-                bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Bạn có chắc chắn muốn đăng xuất?");
+                bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to sign out?");
                 if (!confirmed) 
                 {
                     Console.WriteLine("User cancelled logout");

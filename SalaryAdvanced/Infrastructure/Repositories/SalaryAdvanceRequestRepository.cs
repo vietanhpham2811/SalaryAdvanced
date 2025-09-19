@@ -101,7 +101,6 @@ namespace SalaryAdvanced.Infrastructure.Repositories
                 .OrderByDescending(r => r.SubmittedAt)
                 .ToListAsync();
         }
-
         public async Task<SalaryAdvanceRequest?> ResponseRequestAsync(SalaryAdvanceRequest response)
         {
             var request = await _dbSet.FindAsync(response.Id);
@@ -133,7 +132,25 @@ namespace SalaryAdvanced.Infrastructure.Repositories
                     .ThenInclude(u => u.Department)
                 .Include(r => r.Status)
                 .Where(r => r.StatusId == statusId)
-                .OrderBy(r => r.SubmittedAt)
+                .OrderBy(r => r.SubmittedAt).ToListAsync(); 
+        }
+        public IQueryable<SalaryAdvanceRequest> GetQueryableWithIncludes()
+        {
+            return _dbSet
+                .Include(r => r.ApplicationUser)
+                    .ThenInclude(e => e.Department)
+                .Include(r => r.Status)
+                .Include(r => r.ApprovedByUser)
+                .AsQueryable();
+        }
+
+        public async Task<IEnumerable<SalaryAdvanceRequest>> GetAllWithIncludesAsync()
+        {
+            return await _dbSet
+                .Include(r => r.ApplicationUser)
+                    .ThenInclude(e => e.Department)
+                .Include(r => r.Status)
+                .Include(r => r.ApprovedByUser)
                 .ToListAsync();
         }
     }

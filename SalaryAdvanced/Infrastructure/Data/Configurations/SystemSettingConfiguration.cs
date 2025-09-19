@@ -26,11 +26,11 @@ namespace SalaryAdvanced.Infrastructure.Data.Configurations
 
             // Seed data
             builder.HasData(
-                new SystemSetting { Id = 1, SettingKey = "MAX_ADVANCE_PERCENTAGE", SettingValue = "50", Description = "Tỷ lệ % tối đa mỗi lần ứng lương", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new SystemSetting { Id = 2, SettingKey = "MAX_MONTHLY_PERCENTAGE", SettingValue = "70", Description = "Tỷ lệ % tối đa hàng tháng", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new SystemSetting { Id = 3, SettingKey = "MAX_REQUESTS_PER_MONTH", SettingValue = "2", Description = "Số lần ứng tối đa mỗi tháng", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new SystemSetting { Id = 4, SettingKey = "REQUEST_START_DAY", SettingValue = "1", Description = "Ngày bắt đầu có thể gửi yêu cầu", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new SystemSetting { Id = 5, SettingKey = "REQUEST_END_DAY", SettingValue = "25", Description = "Ngày kết thúc có thể gửi yêu cầu", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+                new SystemSetting { Id = 1, SettingKey = "MAX_ADVANCE_PERCENTAGE", SettingValue = "50", Description = "Maximum percentage per salary advance", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new SystemSetting { Id = 2, SettingKey = "MAX_MONTHLY_PERCENTAGE", SettingValue = "70", Description = "Maximum monthly percentage", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new SystemSetting { Id = 3, SettingKey = "MAX_REQUESTS_PER_MONTH", SettingValue = "2", Description = "Maximum requests per month", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new SystemSetting { Id = 4, SettingKey = "REQUEST_START_DAY", SettingValue = "1", Description = "Start day for requests", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new SystemSetting { Id = 5, SettingKey = "REQUEST_END_DAY", SettingValue = "25", Description = "End day for requests", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
             );
         }
     }
