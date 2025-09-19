@@ -40,8 +40,7 @@ namespace SalaryAdvanced.Application.DTOs
         public string? Phone { get; set; }
         public decimal BasicSalary { get; set; }
         public DateTime HireDate { get; set; }
-        public bool IsActive { get; set; }
-        
+        public bool IsActive { get; set; }      
         public string DepartmentName { get; set; } = string.Empty;
         public string RoleName { get; set; } = string.Empty;
         public bool IsDepartmentManager { get; set; }
@@ -58,22 +57,5 @@ namespace SalaryAdvanced.Application.DTOs
         public string Password { get; set; } = string.Empty;
 
         public bool RememberMe { get; set; }
-    }
-
-    public class ChangePasswordDto
-    {
-        [Required]
-        [DataType(DataType.Password)]
-        public string CurrentPassword { get; set; } = string.Empty;
-
-        [Required]
-        [DataType(DataType.Password)]
-        [MinLength(6)]
-        public string NewPassword { get; set; } = string.Empty;
-
-        [Required]
-        [DataType(DataType.Password)]
-        [Compare("NewPassword")]
-        public string ConfirmPassword { get; set; } = string.Empty;
     }
 }

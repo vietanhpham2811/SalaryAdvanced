@@ -27,15 +27,12 @@ namespace SalaryAdvanced.Controllers
                 {
                     return Redirect("/login?error=" + Uri.EscapeDataString("Email và mật khẩu không được để trống"));
                 }
-
                 var result = await _authService.SignInAsync(Email, Password);
-                
                 if (result)
                 {
                     var returnUrl = ReturnUrl ?? "/";
                     return Redirect(returnUrl);
                 }
-
                 return Redirect("/login?error=" + Uri.EscapeDataString("Email hoặc mật khẩu không đúng"));
             }
             catch (Exception ex)

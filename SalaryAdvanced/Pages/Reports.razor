@@ -1,0 +1,392 @@
+﻿@page "/reports"
+@using SalaryAdvanced.Application.DTOs
+@using SalaryAdvanced.Application.Interfaces
+@using Microsoft.AspNetCore.Authorization
+@inject ISalaryAdvancedReportService ReportService
+@inject IJSRuntime JSRuntime
+@attribute [Authorize(Roles = "Manager,Admin")]
+
+<PageTitle>Báo cáo yêu cầu tạm ứng</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="h3 mb-0">
+                        <i class="fas fa-chart-line me-2 text-primary"></i>
+                        Báo cáo yêu cầu tạm ứng
+                    </h2>
+                    <p class="text-muted mb-0">Theo dõi và thống kê các yêu cầu tạm ứng lương</p>
+                </div>
+                <button class="btn btn-success" @onclick="ExportToExcel" disabled="@isExporting">
+                    @if (isExporting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    }
+                    else
+                    {
+                        <i class="fas fa-file-excel me-2"></i>
+                    }
+                    Xuất Excel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (summary != null)
+    {
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Tổng yêu cầu
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">@summary.TotalRequests</div>
+                                <div class="text-xs text-muted">@summary.TotalRequestAmount.ToString("N0") VNĐ</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Đã phê duyệt
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">@summary.ApprovedRequests</div>
+                                <div class="text-xs text-muted">@summary.TotalApprovedAmount.ToString("N0") VNĐ</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Chờ duyệt
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">@summary.PendingRequests</div>
+                                <div class="text-xs text-muted">@summary.TotalPendingAmount.ToString("N0") VNĐ</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-clock fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-danger shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                    Từ chối
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">@summary.RejectedRequests</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-filter me-2"></i>
+                        Bộ lọc
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <label class="form-label">Từ ngày</label>
+                            <input type="date" class="form-control" @bind="filter.FromDate" @bind:event="onchange" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Đến ngày</label>
+                            <input type="date" class="form-control" @bind="filter.ToDate" @bind:event="onchange" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Trạng thái</label>
+                            <select class="form-select" @bind="filter.Status" @bind:event="onchange">
+                                <option value="">Tất cả</option>
+                                <option value="Pending">Chờ duyệt</option>
+                                <option value="Approved">Đã duyệt</option>
+                                <option value="Rejected">Từ chối</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Tên nhân viên</label>
+                            <input type="text" class="form-control" @bind="filter.EmployeeName" @bind:event="onchange" placeholder="Tìm theo tên..." />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Mã nhân viên</label>
+                            <input type="text" class="form-control" @bind="filter.EmployeeCode" @bind:event="onchange" placeholder="Mã NV..." />
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button class="btn btn-outline-secondary" @onclick="ClearFilters">
+                                <i class="fas fa-eraser me-2"></i>
+                                Xóa bộ lọc
+                            </button>
+                            <button class="btn btn-primary ms-2" @onclick="LoadData">
+                                <i class="fas fa-search me-2"></i>
+                                Tìm kiếm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        Danh sách yêu cầu
+                        @if (requests != null)
+                        {
+                            <span class="badge bg-secondary ms-2">@requests.Count</span>
+                        }
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (isLoading)
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Đang tải...</span>
+                            </div>
+                            <div class="mt-2">Đang tải dữ liệu...</div>
+                        </div>
+                    }
+                    else if (requests != null && requests.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Mã NV</th>
+                                        <th>Tên nhân viên</th>
+                                        <th>Phòng ban</th>
+                                        <th>Số tiền</th>
+                                        <th>Lý do</th>
+                                        <th>Ngày yêu cầu</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ngày duyệt</th>
+                                        <th>Người duyệt</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < requests.Count; i++)
+                                    {
+                                        var request = requests[i];
+                                        <tr>
+                                            <td>@(i + 1)</td>
+                                            <td>
+                                                @request.EmployeeCode
+                                            </td>
+                                            <td>@request.EmployeeName</td>
+                                            <td>@request.DepartmentName</td>
+                                            <td class="text-end">
+                                                <strong class="text-success">@request.RequestAmount.ToString("N0") VNĐ</strong>
+                                            </td>
+                                            <td>
+                                                <span title="@request.Reason">
+                                                    @(request.Reason.Length > 50 ? request.Reason.Substring(0, 50) + "..." : request.Reason)
+                                                </span>
+                                            </td>
+                                            <td>@request.RequestDate.ToString("dd/MM/yyyy")</td>
+                                            <td>
+                                                @switch (request.Status)
+                                                {
+                                                    case "Pending":
+                                                        <span class="badge bg-warning">Chờ duyệt</span>
+                                                        break;
+                                                    case "Approved":
+                                                        <span class="badge bg-success">Đã duyệt</span>
+                                                        break;
+                                                    case "Rejected":
+                                                        <span class="badge bg-danger">Từ chối</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                @(request.ApprovalDate?.ToString("dd/MM/yyyy") ?? "-")
+                                            </td>
+                                            <td>
+                                                @(request.ApprovedByName ?? "-")
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Không có dữ liệu</h5>
+                            <p class="text-muted">Không tìm thấy yêu cầu nào phù hợp với bộ lọc.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<SalaryAdvanceReportDto>? requests;
+    private ReportSummaryDto? summary;
+    private ReportFilterDto _filter = new();
+    private ReportFilterDto filter 
+    { 
+        get => _filter; 
+        set 
+        { 
+            _filter = value; 
+            _ = LoadData();
+        } 
+    }
+    
+    private bool isLoading = true;
+    private bool isExporting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _filter.FromDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+        _filter.ToDate = DateTime.Now; 
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        try
+        {
+            requests = await ReportService.GetReportAsync(filter);
+            summary = await ReportService.GetReportSummaryAsync(filter);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Lỗi khi tải dữ liệu: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OnFilterChanged()
+    {
+        await LoadData();
+    }
+
+    private async Task ClearFilters()
+    {
+        _filter = new ReportFilterDto
+        {
+            FromDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1),
+            ToDate = DateTime.Now
+        };
+        await LoadData();
+    }
+
+    private async Task ExportToExcel()
+    {
+        isExporting = true;
+        try
+        {
+            var excelData = await ReportService.ExportToExcelAsync(filter);
+            var fileName = $"BaoCao_YeuCauTamUng_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(excelData));
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Lỗi khi xuất file: {ex.Message}");
+        }
+        finally
+        {
+            isExporting = false;
+        }
+    }
+}
+
+<script>
+    window.downloadFile = (filename, base64Data) => {
+        const link = document.createElement('a');
+        link.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + base64Data;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+</script>
+
+<style>
+    .border-left-primary {
+        border-left: 0.25rem solid #4e73df !important;
+    }
+    
+    .border-left-success {
+        border-left: 0.25rem solid #1cc88a !important;
+    }
+    
+    .border-left-warning {
+        border-left: 0.25rem solid #f6c23e !important;
+    }
+    
+    .border-left-danger {
+        border-left: 0.25rem solid #e74a3b !important;
+    }
+    
+    .text-xs {
+        font-size: 0.7rem;
+    }
+    
+    .font-weight-bold {
+        font-weight: 700;
+    }
+    
+    .text-gray-800 {
+        color: #5a5c69;
+    }
+    
+    .text-gray-300 {
+        color: #dddfeb;
+    }
+</style>

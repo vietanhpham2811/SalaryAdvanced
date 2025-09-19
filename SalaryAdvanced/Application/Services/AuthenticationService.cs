@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SalaryAdvanced.Application.Interfaces;
 using SalaryAdvanced.Domain.Entities;
 using System.Security.Claims;
+using SalaryAdvanced.Application.DTOs;
 
 namespace SalaryAdvanced.Application.Services
 {
@@ -74,7 +75,7 @@ namespace SalaryAdvanced.Application.Services
                 if (_authStateProvider is Infrastructure.Auth.CustomAuthenticationStateProvider customProvider)
                 {
                     customProvider.NotifyUserLogout();
-                }             
+                }
             }
             catch (Exception ex)
             {
@@ -106,13 +107,13 @@ namespace SalaryAdvanced.Application.Services
 
         public async Task<bool> RegisterAsync(ApplicationUser user, string password)
         {
-            var result = await _userManager.CreateAsync(user, password);        
+            var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, "Employee");
-                
+
                 return true;
-            }        
+            }
             return false;
         }
 
@@ -125,7 +126,7 @@ namespace SalaryAdvanced.Application.Services
         private async Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(ApplicationUser user)
         {
             var roles = await _userManager.GetRolesAsync(user);
-            
+
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -140,10 +141,58 @@ namespace SalaryAdvanced.Application.Services
             }
 
             var identity = new ClaimsIdentity(
-                claims, 
+                claims,
                 IdentityConstants.ApplicationScheme);
 
             return new ClaimsPrincipal(identity);
+        }
+
+        public async Task<UserProfileDto?> GetUserProfileAsync()
+        {
+            var currentUser = await GetCurrentUserAsync();
+            if (currentUser == null)
+                return null;
+
+            var roles = await _userManager.GetRolesAsync(currentUser);
+            var role = roles.FirstOrDefault() ?? "Employee";
+
+            return new UserProfileDto
+            {
+                Id = currentUser.Id,
+                EmployeeCode = currentUser.EmployeeCode,
+                UserName = currentUser.UserName ?? "",
+                Email = currentUser.Email ?? "",
+                FullName = currentUser.FullName,
+                Phone = currentUser.PhoneNumber,
+                BasicSalary = currentUser.BasicSalary,
+                HireDate = currentUser.HireDate,
+                DepartmentId = currentUser.DepartmentId,
+                DepartmentName = currentUser.Department?.Name ?? "",
+                Role = role,
+                IsActive = currentUser.IsActive
+            };
+        }
+
+        public async Task<bool> UpdateUserProfileAsync(UpdateUserProfileDto updateDto)
+        {
+            var currentUser = await GetCurrentUserAsync();
+            if (currentUser == null)
+                return false;
+
+            currentUser.FullName = updateDto.FullName;
+            currentUser.PhoneNumber = updateDto.Phone;
+
+            var result = await _userManager.UpdateAsync(currentUser);
+            return result.Succeeded;
+        }
+
+        public async Task<bool> ChangePasswordAsync(string currentPassword, string newPassword)
+        {
+            var currentUser = await GetCurrentUserAsync();
+            if (currentUser == null)
+                return false;
+
+            return await ChangePasswordAsync(currentUser, currentPassword, newPassword);
         }
     }
 }

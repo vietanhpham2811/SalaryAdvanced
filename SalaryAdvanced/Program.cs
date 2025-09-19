@@ -12,6 +12,8 @@ using SalaryAdvanced.Application.Interfaces;
 using SalaryAdvanced.Application.Services;
 using SalaryAdvanced.Infrastructure.Auth;
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -83,6 +85,7 @@ builder.Services.AddScoped<ISystemSettingRepository, SystemSettingRepository>();
 // Add Application Services
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<ISalaryAdvanceService, SalaryAdvanceService>();
+builder.Services.AddScoped<ISalaryAdvancedReportService, SalaryAdvanceReportService>();
 
 // Add HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
