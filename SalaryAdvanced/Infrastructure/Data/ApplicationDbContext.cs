@@ -15,6 +15,7 @@ namespace SalaryAdvanced.Infrastructure.Data
         public DbSet<RequestStatus> RequestStatuses { get; set; } = null!;
         public DbSet<SalaryAdvanceRequest> SalaryAdvanceRequests { get; set; } = null!;
         public DbSet<SystemSetting> SystemSettings { get; set; } = null!;
+        public DbSet<LimitSalary> LimitSalarys { get; set; } = null!;
 
         // Identity tables will be created automatically
         // ApplicationUser and ApplicationRole are handled by IdentityDbContext
@@ -29,6 +30,7 @@ namespace SalaryAdvanced.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new RequestStatusConfiguration());
             modelBuilder.ApplyConfiguration(new SalaryAdvanceRequestConfiguration());
             modelBuilder.ApplyConfiguration(new SystemSettingConfiguration());
+            modelBuilder.ApplyConfiguration(new LimitSalaryConfiguration());
 
             // Configure Identity table names
             modelBuilder.Entity<ApplicationUser>().ToTable("application_users");

@@ -1,0 +1,177 @@
+﻿@page "/limitsalaries"
+@using Microsoft.EntityFrameworkCore
+@using SalaryAdvanced.Domain.Entities
+@using SalaryAdvanced.Infrastructure.Data
+@inject ApplicationDbContext DbContext
+@using SalaryAdvanced.Application.Interfaces
+@inject ILimitSalaryRepository LimitSalaryService
+<h3>Limit Salary</h3>
+
+<EditForm Model="limitSalaryModel" OnValidSubmit="OnCreate">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+            <label>Name</label>
+            <InputText class="form-control" @bind-Value="limitSalaryModel.Name" />
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <label>Type</label>
+            <InputSelect class="form-control" @bind-Value="limitSalaryModel.Type">
+                <option value="">-- Chọn Type --</option>
+                <option value="E">Employee</option>
+                <option value="D">Department</option>
+            </InputSelect>
+
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <label>ObjectId</label>
+            <InputNumber class="form-control" @bind-Value="limitSalaryModel.ObjectId" />
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <label>Max Once %</label>
+            <InputNumber class="form-control" @bind-Value="limitSalaryModel.MaxOncePercent" step="0.01" />
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <label>Max Times/Month</label>
+            <InputNumber class="form-control" @bind-Value="limitSalaryModel.MaxTimesPerMonth" />
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <label>Max Monthly %</label>
+            <InputNumber class="form-control" @bind-Value="limitSalaryModel.MaxMonthlyPercent" step="0.01" />
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <label>Valid From Day</label>
+            <InputNumber class="form-control" @bind-Value="limitSalaryModel.ValidFromDay" />
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <label>Valid To Day</label>
+            <InputNumber class="form-control" @bind-Value="limitSalaryModel.ValidToDay" />
+        </div>
+
+    </div>
+
+    <div class="mb-3">
+        <button type="button" class="btn btn-primary me-2" @onclick="OnSearch">Search</button>
+        <button type="submit" class="btn btn-success me-2">Save</button>
+        <button type="button" class="btn btn-secondary" @onclick="OnClear">Clear</button>
+    </div>
+</EditForm>
+
+<hr />
+
+@if (limitSalaries == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!limitSalaries.Any())
+{
+    <p>Không có dữ liệu</p>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>ObjectId</th>
+                <th>Max Once %</th>
+                <th>Max Times/Month</th>
+                <th>Max Monthly %</th>
+                <th>Valid From Day</th>
+                <th>Valid To Day</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in limitSalaries)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Name</td>
+                    <td>@item.Type</td>
+                    <td>@item.ObjectId</td>
+                    <td>@item.MaxOncePercent</td>
+                    <td>@item.MaxTimesPerMonth</td>
+                    <td>@item.MaxMonthlyPercent</td>
+                    <td>@item.ValidFromDay</td>
+                    <td>@item.ValidToDay</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-2" @onclick="() => OnEdit(item.Id)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => OnDelete(item.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private LimitSalary limitSalaryModel = new LimitSalary();
+    private List<LimitSalary> limitSalaries;
+    private bool isEditMode = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAll();
+    }
+
+    private async Task LoadAll()
+    {
+        limitSalaries = await LimitSalaryService.GetAllAsync();
+
+    }
+
+    private async Task OnCreate()
+    {
+        if (isEditMode)
+        {
+            await LimitSalaryService.UpdateAsync(limitSalaryModel);
+            isEditMode = false;
+        }
+        else
+        {
+            await LimitSalaryService.AddAsync(limitSalaryModel);
+        }
+
+        await LoadAll();
+
+        limitSalaryModel = new LimitSalary();
+    }
+
+    private async Task OnSearch()
+    {
+        limitSalaries = await LimitSalaryService.SearchAsync(limitSalaryModel);
+    }
+
+    private async Task OnClear()
+    {
+        limitSalaryModel = new LimitSalary();
+        isEditMode = false;
+        await LoadAll();
+    }
+
+    private async Task OnEdit(int id)
+    {
+        var item = await LimitSalaryService.GetByIdAsync(id);
+        if (item != null)
+        {
+            limitSalaryModel = item;
+            isEditMode = true;
+        }
+    }
+
+    private async Task OnDelete(int id)
+    {
+        await LimitSalaryService.DeleteAsync(id);
+        await LoadAll();
+        if (isEditMode && limitSalaryModel.Id == id)
+        {
+            limitSalaryModel = new LimitSalary();
+            isEditMode = false;
+        }
+    }
+}
+
