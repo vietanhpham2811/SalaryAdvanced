@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using SalaryAdvanced.Application.Interfaces;
 using SalaryAdvanced.Application.Mappings;
 using SalaryAdvanced.Application.Services;
-using SalaryAdvanced.Data;
 using SalaryAdvanced.Domain.Entities;
 using SalaryAdvanced.Domain.Interfaces;
 using SalaryAdvanced.Infrastructure.Auth;
@@ -91,7 +90,6 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<ISalaryAdvanceRequestService, SalaryAdvanceRequestService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddScoped<ISalaryAdvancedReportService, SalaryAdvanceReportService>();
-builder.Services.AddScoped<ISalaryAdvanceService, SalaryAdvanceService>();
 builder.Services.AddScoped<ILimitSalaryRepository, LimitSalaryService>();
 
 // Add HttpContextAccessor
