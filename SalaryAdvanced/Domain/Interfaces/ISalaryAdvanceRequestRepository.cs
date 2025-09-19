@@ -12,5 +12,7 @@ namespace SalaryAdvanced.Domain.Interfaces
         Task<int> GetRequestCountByEmployeeAndMonthAsync(int employeeId, DateTime month);
         Task<SalaryAdvanceRequest?> GetWithDetailsAsync(int id);
         Task<IEnumerable<SalaryAdvanceRequest>> GetRequestHistoryAsync(int employeeId);
+        IQueryable<SalaryAdvanceRequest> GetQueryableWithIncludes();
+        Task<IEnumerable<SalaryAdvanceRequest>> GetAllWithIncludesAsync();
     }
 }

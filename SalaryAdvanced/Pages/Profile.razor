@@ -1,0 +1,414 @@
+﻿@page "/profile"
+@using SalaryAdvanced.Application.DTOs
+@using SalaryAdvanced.Application.Interfaces
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthenticationService AuthService
+@inject IJSRuntime JSRuntime
+@attribute [Authorize]
+
+<PageTitle>Hồ Sơ Cá Nhân</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Hồ Sơ Cá Nhân
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (userProfile == null)
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Đang tải...</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <div class="col-md-8">
+                                @if (!isEditing)
+                                {
+                                    <div class="row mb-3">
+                                        <div class="col-sm-4"><strong>Mã nhân viên:</strong></div>
+                                        <div class="col-sm-8">@userProfile.EmployeeCode</div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-sm-4"><strong>Tên đăng nhập:</strong></div>
+                                        <div class="col-sm-8">@userProfile.UserName</div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-sm-4"><strong>Họ và tên:</strong></div>
+                                        <div class="col-sm-8">@userProfile.FullName</div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-sm-4"><strong>Email:</strong></div>
+                                        <div class="col-sm-8">@userProfile.Email</div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-sm-4"><strong>Số điện thoại:</strong></div>
+                                        <div class="col-sm-8">@(userProfile.Phone ?? "Chưa cập nhật")</div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-sm-4"><strong>Phòng ban:</strong></div>
+                                        <div class="col-sm-8">@userProfile.DepartmentName</div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-sm-4"><strong>Chức vụ:</strong></div>
+                                        <div class="col-sm-8">
+                                            <span class="badge bg-info">@userProfile.Role</span>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-sm-4"><strong>Lương cơ bản:</strong></div>
+                                        <div class="col-sm-8">
+                                            <span class="text-success fw-bold">
+                                                @userProfile.BasicSalary.ToString("N0") VNĐ
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-sm-4"><strong>Ngày vào làm:</strong></div>
+                                        <div class="col-sm-8">@userProfile.HireDate.ToString("dd/MM/yyyy")</div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <!-- Edit Mode -->
+                                    <EditForm Model="updateModel" OnValidSubmit="UpdateProfileAsync">
+                                        <DataAnnotationsValidator />
+
+                                        <div class="row mb-3">
+                                            <div class="col-sm-4"><strong>Mã nhân viên:</strong></div>
+                                            <div class="col-sm-8">
+                                                <span class="text-muted">@userProfile.EmployeeCode (Không thể thay đổi)</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-sm-4"><strong>Email:</strong></div>
+                                            <div class="col-sm-8">
+                                                <span class="text-muted">@userProfile.Email (Không thể thay đổi)</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <label class="col-sm-4 col-form-label"><strong>Họ và tên:</strong></label>
+                                            <div class="col-sm-8">
+                                                <InputText @bind-Value="updateModel.FullName" class="form-control" />
+                                                <ValidationMessage For="@(() => updateModel.FullName)" class="text-danger" />
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <label class="col-sm-4 col-form-label"><strong>Số điện thoại:</strong></label>
+                                            <div class="col-sm-8">
+                                                <InputText @bind-Value="updateModel.Phone" class="form-control" />
+                                                <ValidationMessage For="@(() => updateModel.Phone)" class="text-danger" />
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-sm-8 offset-sm-4">
+                                                <button type="submit" class="btn btn-primary me-2" disabled="@isUpdating">
+                                                    @if (isUpdating)
+                                                    {
+                                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="fas fa-save me-2"></i>
+                                                    }
+                                                    Lưu thay đổi
+                                                </button>
+                                                <button type="button" class="btn btn-secondary" @onclick="CancelEdit">
+                                                    <i class="fas fa-times me-2"></i>
+                                                    Hủy
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </EditForm>
+                                }
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <div class="mb-3">
+                                            <i class="fas fa-user-circle fa-4x text-primary"></i>
+                                        </div>
+
+                                        @if (!isEditing)
+                                        {
+                                            <button class="btn btn-outline-primary btn-sm w-100 mb-2" @onclick="StartEdit">
+                                                <i class="fas fa-edit me-2"></i>
+                                                Chỉnh sửa thông tin
+                                            </button>
+                                        }
+
+                                        <button class="btn btn-outline-warning btn-sm w-100"
+                                            @onclick="ShowChangePasswordModal">
+                                            <i class="fas fa-key me-2"></i>
+                                            Đổi mật khẩu
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade @(showChangePasswordModal ? "show d-block" : "")" tabindex="-1"
+    style="@(showChangePasswordModal ? "background-color: rgba(0,0,0,0.5);" : "")">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-key me-2"></i>
+                    Đổi mật khẩu
+                </h5>
+                <button type="button" class="btn-close" @onclick="HideChangePasswordModal"></button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="changePasswordModel" OnValidSubmit="ChangePasswordAsync">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-3">
+                        <label class="form-label">Mật khẩu hiện tại</label>
+                        <div class="position-relative">
+                            <InputText @bind-Value="changePasswordModel.CurrentPassword"
+                                type="@(showCurrentPassword ? "text" : "password")" class="form-control pe-5" />
+                            <button type="button"
+                                class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 border-0"
+                                @onclick="() => showCurrentPassword = !showCurrentPassword">
+                                <i class="fas @(showCurrentPassword ? "fa-eye-slash" : "fa-eye")"></i>
+                            </button>
+                        </div>
+                        <ValidationMessage For="@(() => changePasswordModel.CurrentPassword)" class="text-danger" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mật khẩu mới</label>
+                        <div class="position-relative">
+                            <InputText @bind-Value="changePasswordModel.NewPassword"
+                                type="@(showNewPassword ? "text" : "password")" class="form-control pe-5" />
+                            <button type="button"
+                                class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 border-0"
+                                @onclick="() => showNewPassword = !showNewPassword">
+                                <i class="fas @(showNewPassword ? "fa-eye-slash" : "fa-eye")"></i>
+                            </button>
+                        </div>
+                        <ValidationMessage For="@(() => changePasswordModel.NewPassword)" class="text-danger" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Xác nhận mật khẩu mới</label>
+                        <div class="position-relative">
+                            <InputText @bind-Value="changePasswordModel.ConfirmPassword"
+                                type="@(showConfirmPassword ? "text" : "password")" class="form-control pe-5" />
+                            <button type="button"
+                                class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 border-0"
+                                @onclick="() => showConfirmPassword = !showConfirmPassword">
+                                <i class="fas @(showConfirmPassword ? "fa-eye-slash" : "fa-eye")"></i>
+                            </button>
+                        </div>
+                        <ValidationMessage For="@(() => changePasswordModel.ConfirmPassword)" class="text-danger" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(passwordChangeMessage))
+                    {
+                        <div class="alert alert-@(passwordChangeSuccess ? "success" : "danger")" role="alert">
+                            <i class="fas fa-@(passwordChangeSuccess ? "check-circle" : "exclamation-triangle") me-2"></i>
+                            @passwordChangeMessage
+                        </div>
+                    }
+
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary me-2" @onclick="HideChangePasswordModal">
+                            Hủy
+                        </button>
+                        <button type="submit" class="btn btn-warning" disabled="@isChangingPassword">
+                            @if (isChangingPassword)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-key me-2"></i>
+                            }
+                            Đổi mật khẩu
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
+        <div class="alert alert-@(isSuccess ? "success" : "danger") alert-dismissible fade show" role="alert">
+            <i class="fas fa-@(isSuccess ? "check-circle" : "exclamation-triangle") me-2"></i>
+            @message
+            <button type="button" class="btn-close" @onclick="() => message = string.Empty"></button>
+        </div>
+    </div>
+}
+
+@code {
+    private UserProfileDto? userProfile;
+    private UpdateUserProfileDto updateModel = new();
+    private ChangePasswordDto changePasswordModel = new();
+
+    private bool isEditing = false;
+    private bool isUpdating = false;
+    private bool showChangePasswordModal = false;
+    private bool isChangingPassword = false;
+
+    private bool showCurrentPassword = false;
+    private bool showNewPassword = false;
+    private bool showConfirmPassword = false;
+
+    private string message = string.Empty;
+    private bool isSuccess = false;
+    private string passwordChangeMessage = string.Empty;
+    private bool passwordChangeSuccess = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserProfile();
+    }
+
+    private async Task LoadUserProfile()
+    {
+        userProfile = await AuthService.GetUserProfileAsync();
+        if (userProfile != null)
+        {
+            updateModel = new UpdateUserProfileDto
+            {
+                FullName = userProfile.FullName,
+                Phone = userProfile.Phone
+            };
+        }
+    }
+
+    private void StartEdit()
+    {
+        isEditing = true;
+    }
+
+    private void CancelEdit()
+    {
+        isEditing = false;
+        if (userProfile != null)
+        {
+            updateModel = new UpdateUserProfileDto
+            {
+                FullName = userProfile.FullName,
+                Phone = userProfile.Phone
+            };
+        }
+    }
+
+    private async Task UpdateProfileAsync()
+    {
+        isUpdating = true;
+        try
+        {
+            var result = await AuthService.UpdateUserProfileAsync(updateModel);
+            if (result)
+            {
+                await LoadUserProfile();
+                isEditing = false;
+                ShowMessage("Cập nhật thông tin thành công!", true);
+            }
+            else
+            {
+                ShowMessage("Có lỗi xảy ra khi cập nhật thông tin!", false);
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowMessage($"Lỗi: {ex.Message}", false);
+        }
+        finally
+        {
+            isUpdating = false;
+        }
+    }
+
+    private void ShowChangePasswordModal()
+    {
+        changePasswordModel = new ChangePasswordDto();
+        passwordChangeMessage = string.Empty;
+        showChangePasswordModal = true;
+    }
+
+    private void HideChangePasswordModal()
+    {
+        showChangePasswordModal = false;
+        changePasswordModel = new ChangePasswordDto();
+        passwordChangeMessage = string.Empty;
+        showCurrentPassword = false;
+        showNewPassword = false;
+        showConfirmPassword = false;
+    }
+
+    private async Task ChangePasswordAsync()
+    {
+        if (changePasswordModel.NewPassword != changePasswordModel.ConfirmPassword)
+        {
+            passwordChangeMessage = "Mật khẩu xác nhận không khớp!";
+            passwordChangeSuccess = false;
+            return;
+        }
+
+        isChangingPassword = true;
+        passwordChangeMessage = string.Empty;
+
+        try
+        {
+            var result = await AuthService.ChangePasswordAsync(changePasswordModel.CurrentPassword,
+            changePasswordModel.NewPassword);
+            if (result)
+            {
+                passwordChangeMessage = "Đổi mật khẩu thành công!";
+                passwordChangeSuccess = true;
+                await Task.Delay(2000);
+                HideChangePasswordModal();
+            }
+            else
+            {
+                passwordChangeMessage = "Mật khẩu hiện tại không đúng hoặc mật khẩu mới không hợp lệ!";
+                passwordChangeSuccess = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            passwordChangeMessage = $"Lỗi: {ex.Message}";
+            passwordChangeSuccess = false;
+        }
+        finally
+        {
+            isChangingPassword = false;
+        }
+    }
+
+    private void ShowMessage(string msg, bool success)
+    {
+        message = msg;
+        isSuccess = success;
+        StateHasChanged();
+    }
+}
